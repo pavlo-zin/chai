@@ -24,6 +24,9 @@ class ChaiUser {
       'picUrl': picUrl,
       'displayName': displayName,
       'bio': bio,
+      // search fields
+      '_searchUsername': username.toLowerCase(),
+      '_searchDisplayName': displayName.toLowerCase(),
     };
   }
 

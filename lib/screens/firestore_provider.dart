@@ -49,10 +49,12 @@ class FirestoreProvider {
   Future<List<ChaiUser>> searchUsers(String query) async {
     if (query.isEmpty) return null;
 
+    final searchQuery = query.toLowerCase();
+
     Future<List<ChaiUser>> searchByUsername = firestore
         .collection('users')
-        .where('username', isGreaterThanOrEqualTo: query)
-        .where('username', isLessThan: query + 'z')
+        .where('_searchUsername', isGreaterThanOrEqualTo: searchQuery)
+        .where('_searchUsername', isLessThan: searchQuery + 'z')
         .get()
         .then((value) => value.docs
             .map((document) => ChaiUser.fromMap(document.data()))
@@ -60,8 +62,8 @@ class FirestoreProvider {
 
     Future<List<ChaiUser>> searchByDisplayName = firestore
         .collection('users')
-        .where('displayName', isGreaterThanOrEqualTo: query)
-        .where('displayName', isLessThan: query + 'z')
+        .where('_searchDisplayName', isGreaterThanOrEqualTo: searchQuery)
+        .where('_searchDisplayName', isLessThan: searchQuery + 'z')
         .get()
         .then((value) => value.docs
             .map((document) => ChaiUser.fromMap(document.data()))
