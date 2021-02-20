@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/ui/network_avatar.dart';
@@ -47,6 +45,8 @@ class _SearchState extends State<Search> {
             child: TextFormField(
               controller: _searchController,
               autofocus: true,
+              autocorrect: false,
+              enableSuggestions: false,
               decoration: InputDecoration(
                   fillColor: Colors.deepOrange[50],
                   filled: true,

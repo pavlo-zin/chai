@@ -2,9 +2,8 @@ import 'dart:developer';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
-import 'package:chai/screens/auth/auth_provider.dart';
 import 'package:chai/screens/firestore_provider.dart';
-import 'package:chai/screens/prefs_provider.dart';
+import 'package:chai/ui/network_avatar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -50,11 +49,7 @@ class _ComposePostState extends State<ComposePost> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(width: 16),
-                          CircleAvatar(
-                              radius: 24,
-                              backgroundImage: snapshot.hasData
-                                  ? NetworkImage(snapshot.data.picUrl)
-                                  : AssetImage("assets/avatar.png")),
+                          NetworkAvatar(radius: 24, url: snapshot.data?.picUrl),
                           SizedBox(width: 16),
                           Expanded(
                               child: TextFormField(
@@ -114,11 +109,5 @@ class _ComposePostState extends State<ComposePost> {
       icon: Icon(Icons.send),
       label: Text("Send"),
     );
-  }
-
-  void handleSignOut(BuildContext context, AuthProvider authProvider) {
-    context.read<PrefsProvider>().clear();
-    authProvider.signOut().then((value) => Navigator.of(context)
-        .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false));
   }
 }

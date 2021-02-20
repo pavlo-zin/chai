@@ -49,7 +49,7 @@ class _ConfirmCodeState extends State<ConfirmCode> {
                   future: PhoneNumber.getParsableNumber(phone),
                   builder: (context, snapshot) {
                     return snapshot.hasData
-                        ? Text("+${snapshot.data}",
+                        ? Text("${phone.dialCode} ${snapshot.data}",
                             style: Theme.of(context).textTheme.headline4)
                         : Text("");
                   }),
