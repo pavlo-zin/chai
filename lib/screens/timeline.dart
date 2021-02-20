@@ -7,6 +7,7 @@ import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/screens/prefs_provider.dart';
 import 'package:chai/ui/emoji_text.dart';
 import 'package:chai/ui/network_avatar.dart';
+import 'package:chai/ui/timeline_empty_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/animation.dart';
@@ -55,12 +56,6 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
       body: StreamBuilder<List<Post>>(
           stream: firestore.getPosts(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.data.isEmpty) {
-              return Center(
-                child: Text("What? No posts yet?",
-                    style: Theme.of(context).textTheme.headline5),
-              );
-            }
             return SafeArea(
               child: CustomScrollView(slivers: [
                 SliverAppBar(
@@ -83,14 +78,32 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                     return Future.delayed(Duration(milliseconds: 900));
                   },
                 ),
-                SliverList(
-                    delegate:
-                        SliverChildListDelegate(buildPostTiles(snapshot.data)))
+                _buildTimelineView(snapshot)
               ]),
             );
           }),
       floatingActionButton: _buildFab(context),
     );
+  }
+
+  _buildTimelineView(AsyncSnapshot<List<Post>> snapshot) {
+    if (snapshot.hasError) {
+      return SliverFillRemaining(
+        child: Center(
+            child: Text("Something wrong... Please try again later",
+                style: Theme.of(context).textTheme.headline6)),
+      );
+    }
+
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator()));
+    }
+
+    return snapshot.data.isEmpty
+        ? TimelineEmptyView(context: context)
+        : SliverList(
+            delegate: SliverChildListDelegate(buildPostTiles(snapshot.data)));
   }
 
   _buildFab(BuildContext context) {
@@ -217,9 +230,7 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                        radius: 36,
-                        backgroundImage: NetworkImage(snapshot.data.picUrl)),
+                    NetworkAvatar(radius: 36, url: snapshot.data.picUrl),
                     SizedBox(
                       height: 16,
                     ),
@@ -242,8 +253,8 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
     );
   }
 
-  _handleSignOut(BuildContext context, AuthProvider authProvider) {
-    context.read<PrefsProvider>().clear();
+  _handleSignOut(BuildContext context, AuthProvider authProvider) async {
+    await context.read<PrefsProvider>().clear();
     authProvider.signOut().then((value) => Navigator.of(context)
         .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false));
   }
