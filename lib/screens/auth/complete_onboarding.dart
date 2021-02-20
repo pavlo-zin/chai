@@ -1,13 +1,16 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/screens/auth/authenticator.dart';
 import 'package:chai/screens/common/theme.dart';
 import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/screens/prefs_provider.dart';
+import 'package:chai/ui/network_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class CompleteOnboarding extends StatefulWidget {
@@ -16,9 +19,15 @@ class CompleteOnboarding extends StatefulWidget {
 }
 
 class _CompleteOnboardingState extends State<CompleteOnboarding> {
+  final _usernameText = TextEditingController();
+  bool _usernameTaken = false;
+  String _avatarImageUrl;
+  final picker = ImagePicker();
+
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _usernameText.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,53 +63,127 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
 
     return Scaffold(
         body: Center(
-      child: Container(
-        padding: EdgeInsets.all(56),
-        child: Form(
-          key: _formKey,
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text("Complete your profile",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600)),
-            SizedBox(height: 32),
-            CircleAvatar(
-                backgroundImage: AssetImage("assets/avatar.png"), radius: 56),
-            SizedBox(height: 24),
-            TextFormField(
-                decoration: InputDecoration(hintText: "@username"),
-                keyboardType: TextInputType.name,
-                validator: (value) => value.length > 2
-                    ? null
-                    : "Username should be at least 3 characters long",
-                onSaved: (value) {
-                  username = value;
-                }),
-            SizedBox(height: 24),
-            TextFormField(
-                decoration: InputDecoration(hintText: "Full Name"),
-                keyboardType: TextInputType.name,
-                onSaved: (value) {
-                  displayName = value;
-                }),
-            SizedBox(height: 32),
-            TextButton(
-                onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    _formKey.currentState.save();
-                    firestore
-                        .setUser(ChaiUser(
-                            username: username, displayName: displayName))
-                        .then((value) {
-                      context.read<PrefsProvider>().setOnboardingComplete();
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/', (Route<dynamic> route) => false);
+      child: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(56),
+          child: Form(
+            key: _formKey,
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text("Create your profile",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline5
+                      .copyWith(fontWeight: FontWeight.w600)),
+              SizedBox(height: 24),
+              SizedBox(
+                height: 112,
+                width: 112,
+                child: RawMaterialButton(
+                  onPressed: () {
+                    getImage().then((value) {
+                      firestore.uploadAvatar(user.uid, File(value.path)).then(
+                          (value) {
+                        log("avatar url $value");
+                        setState(() {
+                          _avatarImageUrl = value;
+                        });
+                      }, onError: (e) {
+                        log("avatar error $e");
+                      });
                     });
-                  }
-                },
-                style: textButtonStyle,
-                child: Text("Complete"))
-          ]),
+                  },
+                  elevation: 0,
+                  highlightElevation: 0,
+                  highlightColor: Colors.deepOrange[100],
+                  splashColor: Colors.transparent,
+                  fillColor: Colors.deepOrange[50],
+                  child: _avatarImageUrl == null
+                      ? Icon(
+                          Icons.add_a_photo,
+                          size: 36,
+                          color: Colors.deepOrange,
+                        )
+                      : NetworkAvatar(
+                          url: _avatarImageUrl,
+                          radius: 56,
+                        ),
+                  shape: CircleBorder(),
+                ),
+              ),
+              SizedBox(height: 24),
+              Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Full name",
+                    style: Theme.of(context).textTheme.caption,
+                  )),
+              TextFormField(
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: InputDecoration(hintText: "Name"),
+                  keyboardType: TextInputType.name,
+                  validator: (value) =>
+                      value.length > 2 ? null : "Name can't be empty",
+                  onSaved: (value) {
+                    displayName = value;
+                  }),
+              SizedBox(height: 24),
+              Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "What should people call you? Username is unique and can be changed later",
+                    style: Theme.of(context).textTheme.caption,
+                  )),
+              TextFormField(
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  controller: _usernameText,
+                  decoration: InputDecoration(
+                      hintText: "Username",
+                      errorText:
+                          _usernameTaken ? "Username already taken" : null),
+                  keyboardType: TextInputType.name,
+                  validator: (value) => value.length > 2
+                      ? null
+                      : "Username must be at least 3 characters long",
+                  onSaved: (value) {
+                    username = value;
+                  }),
+              SizedBox(height: 24),
+              TextButton(
+                  onPressed: () {
+                    if (_formKey.currentState.validate()) {
+                      _formKey.currentState.save();
+                      final user = ChaiUser(
+                          username: username,
+                          displayName: displayName,
+                          picUrl: _avatarImageUrl);
+                      firestore.setUser(user).then((value) {
+                        log("User saved");
+                      }, onError: (error) {
+                        if (error is UsernameExistsError) {
+                          setState(() {
+                            _usernameTaken = true;
+                          });
+                        }
+                      });
+                    }
+                  },
+                  style: textButtonStyle,
+                  child: Text("Save"))
+            ]),
+          ),
         ),
       ),
     ));
+  }
+
+  Future<PickedFile> getImage() async {
+    return await picker.getImage(
+        source: ImageSource.gallery,
+        maxHeight: 300,
+        maxWidth: 300,
+        imageQuality: 69);
   }
 }
