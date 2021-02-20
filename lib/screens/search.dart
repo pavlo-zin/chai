@@ -1,6 +1,7 @@
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/screens/firestore_provider.dart';
-import 'package:chai/ui/network_avatar.dart';
+import 'package:chai/ui/search_list_tile.dart';
+import 'package:chai/ui/search_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -40,38 +41,9 @@ class _SearchState extends State<Search> {
         elevation: 0,
         title: Padding(
           padding: const EdgeInsets.only(top: 3.0),
-          child: SizedBox(
-            height: 38,
-            child: TextFormField(
-              controller: _searchController,
-              autofocus: true,
-              autocorrect: false,
-              enableSuggestions: false,
-              decoration: InputDecoration(
-                  fillColor: Colors.deepOrange[50],
-                  filled: true,
-                  prefixIcon: Icon(Icons.search),
-                  suffixIcon: _isCloseIconVisible
-                      ? Theme(
-                          data: ThemeData(
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                          ),
-                          child: IconButton(
-                            color: Colors.deepOrangeAccent,
-                            icon: Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                            },
-                          ),
-                        )
-                      : null,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                  hintText: "Search",
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.circular(25))),
-            ),
+          child: SearchTextField(
+            searchController: _searchController,
+            isCloseIconVisible: _isCloseIconVisible,
           ),
         ),
         actions: [
@@ -94,30 +66,12 @@ class _SearchState extends State<Search> {
             if (!snapshot.hasData) {
               return Container();
             }
-            return ListView(children: _buildUserTiles(snapshot.data));
+            return ListView(
+                children: snapshot.data
+                    .map((user) => SearchListTile(context: context, user: user))
+                    .toList());
           }),
     );
-  }
-
-  _buildUserTiles(List<ChaiUser> users) {
-    return users
-        .map((user) => ListTile(
-            onTap: () {},
-            leading: Padding(
-              padding: const EdgeInsets.only(top: 4.0, left: 2),
-              child: NetworkAvatar(
-                radius: 20,
-                url: user.picUrl,
-              ),
-            ),
-            title: Text(user.displayName,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyText1
-                    .copyWith(fontWeight: FontWeight.w600)),
-            subtitle: Text("@${user.username}",
-                style: Theme.of(context).textTheme.subtitle2)))
-        .toList();
   }
 
   _searchListener() {
