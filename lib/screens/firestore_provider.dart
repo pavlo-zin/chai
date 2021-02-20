@@ -1,17 +1,33 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirestoreProvider {
   final String uid;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final firebase_storage.FirebaseStorage storage =
+      firebase_storage.FirebaseStorage.instance;
 
   FirestoreProvider({this.uid});
 
-  Future<void> setUser(ChaiUser user) {
+  Future<void> setUser(ChaiUser user) async {
     log("setUser $uid");
+
+    bool usernameExists = await firestore
+        .collection('users')
+        .where('username', isEqualTo: user.username)
+        .get()
+        .then((value) => value.docs.isNotEmpty);
+
+    if (usernameExists) {
+      log("Error: username ${user.username} already exists");
+      return Future.error(UsernameExistsError());
+    }
+
     var users = firestore.collection('users');
     return users.doc(uid).set(user.toMap());
   }
@@ -47,7 +63,7 @@ class FirestoreProvider {
   }
 
   Future<List<ChaiUser>> searchUsers(String query) async {
-    if (query.isEmpty) return null;
+    if (query.isEmpty) return List.empty();
 
     final searchQuery = query.toLowerCase();
 
@@ -72,4 +88,24 @@ class FirestoreProvider {
     return Future.wait([searchByUsername, searchByDisplayName]).then((value) =>
         value.expand((element) => element).toList().toSet().toList());
   }
+
+  Future<String> uploadAvatar(String uid, File file) async {
+    log("uploadAvatar");
+    try {
+      firebase_storage.TaskSnapshot storageTaskSnapshot =
+          await storage.ref('uploads/avatars/$uid/avatar.jpg').putFile(file);
+      print(storageTaskSnapshot.ref.getDownloadURL());
+      log("uploadAvatar file is put");
+
+      var url = await storageTaskSnapshot.ref.getDownloadURL();
+      log("uploadAvatar url $url");
+
+      return url;
+    } catch (e) {
+      log(e);
+      return Future.error(e);
+    }
+  }
 }
+
+class UsernameExistsError {}
