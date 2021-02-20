@@ -38,7 +38,10 @@ class _PhoneInputState extends State<PhoneInput> {
                       children: [
                         Text(
                           "Your phone",
-                          style: Theme.of(context).textTheme.headline5,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline5
+                              .copyWith(fontWeight: FontWeight.w600),
                         ),
                         SizedBox(height: 16),
                         Padding(
@@ -77,7 +80,8 @@ class _PhoneInputState extends State<PhoneInput> {
                 }, codeSent: (String id, int resendToken) {
                   final prefs = context.read<PrefsProvider>();
                   prefs.setVerificationId(id);
-                  Navigator.pushNamed(context, "/confirm_code", arguments: phone);
+                  Navigator.pushNamed(context, "/confirm_code",
+                      arguments: phone);
                 });
               }
             },
