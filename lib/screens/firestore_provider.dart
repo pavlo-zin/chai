@@ -81,6 +81,21 @@ class FirestoreProvider {
           .doc(toUnfollow.id)
           .collection('followers')
           .doc(current.id));
+
+      WriteBatch batch = firestore.batch();
+      firestore
+          .collection('users')
+          .doc(currentUid)
+          .collection('posts')
+          .where('userInfo.id', isEqualTo: toUnfollow.id)
+          .get()
+          .then((querySnapshot) {
+        querySnapshot.docs.forEach((document) {
+          batch.delete(document.reference);
+        });
+
+        return batch.commit();
+      });
     });
   }
 
