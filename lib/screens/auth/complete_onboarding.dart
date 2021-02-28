@@ -23,6 +23,13 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
   bool _usernameTaken = false;
   String _avatarImageUrl;
   final picker = ImagePicker();
+  AsyncSnapshot<User> userSnapshot;
+
+  @override
+  void initState() {
+    super.initState();
+    userSnapshot = context.read<AsyncSnapshot<User>>();
+  }
 
   @override
   void dispose() {
@@ -33,7 +40,6 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
   @override
   Widget build(BuildContext context) {
     final firestore = context.read<FirestoreProvider>();
-    final user = context.read<User>();
 
     return StreamBuilder<ChaiUser>(
         stream: firestore.getUser(),
@@ -48,7 +54,7 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                 context.read<PrefsProvider>().setOnboardingComplete();
                 return Authenticator();
               } else {
-                return buildOnboarding(context, firestore, user);
+                return buildOnboarding(context, firestore, userSnapshot.data);
               }
           }
         });
