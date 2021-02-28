@@ -1,4 +1,4 @@
-import 'package:chai/screens/common/theme.dart';
+import 'package:chai/common/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
