@@ -16,16 +16,31 @@ class Authenticator extends StatefulWidget {
 }
 
 class _AuthenticatorState extends State<Authenticator> {
+  bool onboardingComplete;
+
+  @override
+  void initState() {
+    super.initState();
+    onboardingComplete = context.read<PrefsProvider>().isOnboardingComplete();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<User>();
-    final onboardingComplete =
-        context.read<PrefsProvider>().isOnboardingComplete();
+    log("AuthenticatorState build");
 
-    log("AuthenticatorState onboardingComplete: ${onboardingComplete.toString()}, user: ${user.toString()}");
+    AsyncSnapshot<User> userSnapshot = context.watch<AsyncSnapshot<User>>();
 
-    if (user == null) return Welcome();
-    if (user != null && !onboardingComplete) return CompleteOnboarding();
-    return Timeline();
+    switch (userSnapshot.connectionState) {
+      case ConnectionState.none:
+      case ConnectionState.waiting:
+        return Scaffold(body: Center(child: CircularProgressIndicator()));
+      case ConnectionState.active:
+        final user = userSnapshot.data;
+        if (user == null) return Welcome();
+        if (user != null && !onboardingComplete) return CompleteOnboarding();
+        return Timeline();
+      default:
+        return SizedBox.shrink();
+    }
   }
 }
