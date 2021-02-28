@@ -4,23 +4,40 @@ import 'package:flutter/material.dart';
 class NetworkAvatar extends StatelessWidget {
   final String url;
   final double radius;
+  final bool drawBorder;
 
   const NetworkAvatar({
     Key key,
     this.url,
     this.radius = 24,
+    this.drawBorder = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6969),
-      child: CachedNetworkImage(
-          width: radius * 2,
-          height: radius * 2,
-          imageUrl: url,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => CircularProgressIndicator()),
+    return Container(
+      decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Theme.of(context).canvasColor,
+            width: drawBorder ? 5.0 : 0.0,
+          )),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6969),
+        child: url == null
+            ? SizedBox(
+                width: radius * 2,
+                height: radius * 2,
+                child: Image(
+                  image: AssetImage('assets/avatar.png'),
+                  fit: BoxFit.cover,
+                ))
+            : CachedNetworkImage(
+                width: radius * 2,
+                height: radius * 2,
+                imageUrl: url,
+                fit: BoxFit.cover),
+      ),
     );
   }
 }
