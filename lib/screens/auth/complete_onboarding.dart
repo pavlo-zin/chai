@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/screens/auth/authenticator.dart';
-import 'package:chai/screens/common/theme.dart';
+import 'package:chai/common/theme.dart';
 import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/screens/prefs_provider.dart';
 import 'package:chai/ui/network_avatar.dart';
