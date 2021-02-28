@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 
 class Search extends StatefulWidget {
   @override
@@ -66,10 +67,19 @@ class _SearchState extends State<Search> {
             if (!snapshot.hasData) {
               return Container();
             }
-            return ListView(
-                children: snapshot.data
-                    .map((user) => SearchListTile(context: context, user: user))
-                    .toList());
+            return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, index) {
+                  final user = snapshot.data[index];
+                  return SearchListTile(
+                      context: context,
+                      user: user,
+                      index: index,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/user_details',
+                            arguments: Tuple2(user, "searchProfilePic$index"));
+                      });
+                });
           }),
     );
   }

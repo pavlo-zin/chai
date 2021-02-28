@@ -5,17 +5,19 @@ import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:stream_transform/stream_transform.dart';
+import 'package:tuple/tuple.dart';
 
 class FirestoreProvider {
-  final String uid;
+  final String currentUid;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final firebase_storage.FirebaseStorage storage =
       firebase_storage.FirebaseStorage.instance;
 
-  FirestoreProvider({this.uid});
+  FirestoreProvider({this.currentUid});
 
   Future<void> setUser(ChaiUser user) async {
-    log("setUser $uid");
+    log("setUser $currentUid");
 
     bool usernameExists = await firestore
         .collection('users')
@@ -29,37 +31,124 @@ class FirestoreProvider {
     }
 
     var users = firestore.collection('users');
-    return users.doc(uid).set(user.toMap());
+    return users.doc(currentUid).set(user.toMap());
   }
 
   Stream<ChaiUser> getUser() {
-    log("getUser $uid");
+    log("getUser $currentUid");
     return firestore
         .collection('users')
-        .doc(uid)
+        .doc(currentUid)
         .snapshots()
-        .map((event) => ChaiUser.fromMap(event.data()));
+        .map((doc) => ChaiUser.fromMap(doc.data(), doc.id));
+  }
+
+  Future<void> followUser(ChaiUser toFollow, ChaiUser current) async {
+    log("followUser: ${toFollow.displayName}, current: ${current.displayName}");
+    // ignore: missing_return
+    return firestore.runTransaction((transaction) {
+      transaction.set(
+          firestore
+              .collection('users')
+              .doc(currentUid)
+              .collection('following')
+              .doc(toFollow.id),
+          toFollow.toMap());
+
+      transaction.set(
+          firestore
+              .collection('users')
+              .doc(toFollow.id)
+              .collection('followers')
+              .doc(current.id),
+          current.toMap());
+    });
+  }
+
+  Future<void> unfollowUser(ChaiUser toUnfollow, ChaiUser current) async {
+    log("unfollowUser: ${toUnfollow.displayName}, current: ${current.displayName}");
+
+    // ignore: missing_return
+    return firestore.runTransaction((transaction) {
+      transaction.delete(firestore
+          .collection('users')
+          .doc(currentUid)
+          .collection('following')
+          .doc(toUnfollow.id));
+
+      transaction.delete(firestore
+          .collection('users')
+          .doc(toUnfollow.id)
+          .collection('followers')
+          .doc(current.id));
+    });
+  }
+
+  Stream<Tuple2> checkIfFollowing(ChaiUser user) {
+    log("checkIfFollowing");
+
+    final check = firestore
+        .collection('users')
+        .doc(currentUid)
+        .collection('following')
+        .doc(user.id)
+        .snapshots()
+        .map((doc) => ChaiUser.fromMap(doc.data(), doc.id));
+
+    return getUser().combineLatest(check,
+        (currentUser, followedUser) => Tuple2(currentUser, followedUser));
   }
 
   Future<void> submitPost(Post post) async {
-    return firestore
-        .collection('users')
-        .doc(uid)
-        .collection('posts')
-        .doc()
-        .set(post.toMap());
+    // ignore: missing_return
+    return firestore.runTransaction((transaction) {
+      transaction.set(
+          firestore
+              .collection('users')
+              .doc(currentUid)
+              .collection('posts')
+              .doc(),
+          post.toMap());
+
+      WriteBatch batch = firestore.batch();
+      firestore
+          .collection('users')
+          .doc(currentUid)
+          .collection('followers')
+          .get()
+          .then((querySnapshot) {
+        querySnapshot.docs.forEach((document) {
+          batch.set(
+              firestore
+                  .collection('users')
+                  .doc(document.id)
+                  .collection('posts')
+                  .doc(),
+              post.toMap());
+        });
+
+        return batch.commit();
+      });
+    });
   }
 
-  Stream<List<Post>> getPosts() {
-    return firestore
+  Stream<List<Post>> getPosts({String uid, bool onlyForThisUser = false}) {
+    final String userId = uid == null ? currentUid : uid;
+
+    log("getPosts for user: $userId");
+
+    var postsQuery = firestore
         .collection('users')
-        .doc(uid)
+        .doc(userId)
         .collection('posts')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((document) => Post.fromMap(document.data()))
-            .toList());
+        .orderBy('timestamp', descending: true);
+
+    if (onlyForThisUser)
+      postsQuery = postsQuery.where('userInfo.id', isEqualTo: userId);
+
+    return postsQuery.snapshots().map((snapshot) => snapshot.docs
+        .map((document) => Post.fromMap(document.data(), document.id, userId))
+        .toList());
   }
 
   Future<List<ChaiUser>> searchUsers(String query) async {
@@ -73,7 +162,7 @@ class FirestoreProvider {
         .where('_searchUsername', isLessThan: searchQuery + 'z')
         .get()
         .then((value) => value.docs
-            .map((document) => ChaiUser.fromMap(document.data()))
+            .map((document) => ChaiUser.fromMap(document.data(), document.id))
             .toList());
 
     Future<List<ChaiUser>> searchByDisplayName = firestore
@@ -82,7 +171,7 @@ class FirestoreProvider {
         .where('_searchDisplayName', isLessThan: searchQuery + 'z')
         .get()
         .then((value) => value.docs
-            .map((document) => ChaiUser.fromMap(document.data()))
+            .map((document) => ChaiUser.fromMap(document.data(), document.id))
             .toList());
 
     return Future.wait([searchByUsername, searchByDisplayName]).then((value) =>
@@ -106,6 +195,8 @@ class FirestoreProvider {
       return Future.error(e);
     }
   }
+
+  bool isUserMe(ChaiUser user) => user.id == currentUid;
 }
 
 class UsernameExistsError {}
