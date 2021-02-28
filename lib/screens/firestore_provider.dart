@@ -45,57 +45,57 @@ class FirestoreProvider {
 
   Future<void> followUser(ChaiUser toFollow, ChaiUser current) async {
     log("followUser: ${toFollow.displayName}, current: ${current.displayName}");
-    // ignore: missing_return
-    return firestore.runTransaction((transaction) {
-      transaction.set(
-          firestore
-              .collection('users')
-              .doc(currentUid)
-              .collection('following')
-              .doc(toFollow.id),
-          toFollow.toMap());
 
-      transaction.set(
-          firestore
-              .collection('users')
-              .doc(toFollow.id)
-              .collection('followers')
-              .doc(current.id),
-          current.toMap());
-    });
+    WriteBatch batch = firestore.batch();
+
+    batch.set(
+        firestore
+            .collection('users')
+            .doc(currentUid)
+            .collection('following')
+            .doc(toFollow.id),
+        toFollow.toMap());
+
+    batch.set(
+        firestore
+            .collection('users')
+            .doc(toFollow.id)
+            .collection('followers')
+            .doc(current.id),
+        current.toMap());
+
+    return batch.commit();
   }
 
   Future<void> unfollowUser(ChaiUser toUnfollow, ChaiUser current) async {
     log("unfollowUser: ${toUnfollow.displayName}, current: ${current.displayName}");
 
-    // ignore: missing_return
-    return firestore.runTransaction((transaction) {
-      transaction.delete(firestore
-          .collection('users')
-          .doc(currentUid)
-          .collection('following')
-          .doc(toUnfollow.id));
+    WriteBatch batch = firestore.batch();
 
-      transaction.delete(firestore
-          .collection('users')
-          .doc(toUnfollow.id)
-          .collection('followers')
-          .doc(current.id));
+    batch.delete(firestore
+        .collection('users')
+        .doc(currentUid)
+        .collection('following')
+        .doc(toUnfollow.id));
 
-      WriteBatch batch = firestore.batch();
-      firestore
-          .collection('users')
-          .doc(currentUid)
-          .collection('posts')
-          .where('userInfo.id', isEqualTo: toUnfollow.id)
-          .get()
-          .then((querySnapshot) {
-        querySnapshot.docs.forEach((document) {
-          batch.delete(document.reference);
-        });
+    batch.delete(firestore
+        .collection('users')
+        .doc(toUnfollow.id)
+        .collection('followers')
+        .doc(current.id));
 
-        return batch.commit();
+    firestore
+        .collection('users')
+        .doc(currentUid)
+        .collection('posts')
+        .where('userInfo.id', isEqualTo: toUnfollow.id)
+        .get()
+        .then((querySnapshot) {
+      querySnapshot.docs.forEach((document) {
+        batch.delete(document.reference);
       });
+
+      return batch.commit();
     });
   }
 
