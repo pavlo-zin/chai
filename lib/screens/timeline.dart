@@ -66,7 +66,7 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
       child: Container(
         color: Theme.of(context).canvasColor,
         child: Scaffold(
-          drawer: ChaiDrawer(),
+          drawer: ChaiDrawer(authProvider),
           body: StreamBuilder<List<Post>>(
               stream: postsStream,
               builder: (context, snapshot) {
@@ -279,12 +279,6 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
         ]),
       ),
     );
-  }
-
-  _handleSignOut(BuildContext context, AuthProvider authProvider) async {
-    await context.read<PrefsProvider>().clear();
-    authProvider.signOut().then((value) => Navigator.of(context)
-        .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false));
   }
 
   // todo refactor this

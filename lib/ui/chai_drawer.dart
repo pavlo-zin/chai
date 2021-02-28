@@ -1,14 +1,18 @@
 import 'dart:developer';
 
 import 'package:chai/models/chai_user.dart';
+import 'package:chai/screens/auth/auth_provider.dart';
 import 'package:chai/screens/firestore_provider.dart';
+import 'package:chai/screens/prefs_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'network_avatar.dart';
 
 class ChaiDrawer extends StatelessWidget {
-  const ChaiDrawer({Key key}) : super(key: key);
+  final AuthProvider auth;
+
+  const ChaiDrawer(this.auth, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +67,16 @@ class ChaiDrawer extends StatelessWidget {
             ),
             ListTile(
               title: Text('Sign out'),
-              onTap: () => {},
+              onTap: () => _handleSignOut(context, auth),
             ),
           ],
         ));
+  }
+
+
+  _handleSignOut(BuildContext context, AuthProvider auth) async {
+    await context.read<PrefsProvider>().clear();
+    auth.signOut().then((value) => Navigator.of(context)
+        .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false));
   }
 }
