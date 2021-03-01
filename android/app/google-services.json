@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "99574912764",
+    "project_id": "chai-52796",
+    "storage_bucket": "chai-52796.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99574912764:android:d59965eecb5a956821a979",
+        "android_client_info": {
+          "package_name": "com.pavlozin.chai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "99574912764-r3fpm28j923k355vlu8526q1aqp6uarp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFyrU3WFeBfoytcbpfKBNN_WJe0KfF9KQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "99574912764-r3fpm28j923k355vlu8526q1aqp6uarp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "99574912764-am66uq502i6j2go0ijru0d7eef09l68o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pavlozin.chai"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
