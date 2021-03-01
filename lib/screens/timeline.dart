@@ -5,7 +5,6 @@ import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/screens/auth/auth_provider.dart';
 import 'package:chai/screens/firestore_provider.dart';
-import 'package:chai/screens/prefs_provider.dart';
 import 'package:chai/ui/chai_drawer.dart';
 import 'package:chai/ui/network_avatar.dart';
 import 'package:chai/ui/timeline_empty_view.dart';
@@ -51,7 +50,6 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    log("AppLifecycleState changed to: $state");
     if (state == AppLifecycleState.resumed) {
       refreshTimeController.add(true);
     }
@@ -61,38 +59,44 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     log("build timeline");
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
-      child: Container(
-        color: Theme.of(context).canvasColor,
-        child: Scaffold(
-          drawer: ChaiDrawer(authProvider),
-          body: StreamBuilder<List<Post>>(
-              stream: postsStream,
-              builder: (context, snapshot) {
-                return SafeArea(
-                  bottom: false,
-                  child: CustomScrollView(slivers: [
-                    SliverAppBar(
-                      floating: true,
-                      title: SizedBox(
-                          height: 28,
-                          child: Image(image: AssetImage("assets/logo.png"))),
-                      actions: [
-                        IconButton(
-                            icon: Icon(Icons.search),
-                            color: Colors.black87,
-                            onPressed: () {
-                              Navigator.of(context).pushNamed("/search");
-                            })
-                      ],
-                    ),
-                    _buildTimelineView(snapshot)
-                  ]),
-                );
-              }),
-          floatingActionButton: _buildFab(context, user),
-        ),
+    final isDarkMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
+
+    return Container(
+      color: Theme.of(context).canvasColor,
+      child: Scaffold(
+        drawer: ChaiDrawer(authProvider),
+        body: StreamBuilder<List<Post>>(
+            stream: postsStream,
+            builder: (context, snapshot) {
+              return SafeArea(
+                bottom: false,
+                child: CustomScrollView(slivers: [
+                  SliverAppBar(
+                    floating: true,
+                    title: SizedBox(
+                        height: 28,
+                        child: Image(
+                            color: Color.fromRGBO(255, 255, 255, 0.85),
+                            colorBlendMode: BlendMode.modulate,
+                            image: AssetImage(
+                                MediaQuery.of(context).platformBrightness ==
+                                        Brightness.light
+                                    ? "assets/logo.png"
+                                    : "assets/logo-white.png"))),
+                    actions: [
+                      IconButton(
+                          icon: Icon(Icons.search),
+                          onPressed: () {
+                            Navigator.of(context).pushNamed("/search");
+                          })
+                    ],
+                  ),
+                  _buildTimelineView(snapshot)
+                ]),
+              );
+            }),
+        floatingActionButton: _buildFab(context, user),
       ),
     );
   }
@@ -136,6 +140,9 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
 
           return snapshot.hasData
               ? FloatingActionButton(
+                  elevation: 2,
+                  highlightElevation: 2,
+                  splashColor: Colors.transparent,
                   onPressed: () => _composePostAndWaitForResult(snapshot.data),
                   child: Icon(Icons.post_add),
                 )
@@ -246,7 +253,9 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildPostIcon(Icons.mode_comment_outlined, "13", () {},
+                      _buildPostIcon(Icons.mode_comment_outlined, "13", () {
+                        showSentSuccess();
+                      },
                           padding:
                               EdgeInsets.only(top: 8, right: 12, bottom: 8)),
                       _buildPostIcon(Icons.favorite_outline, "69", () {}),
@@ -275,7 +284,11 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
         child: Row(children: [
           Icon(icon, size: 18),
           SizedBox(width: 4),
-          Text(text, style: Theme.of(context).textTheme.caption)
+          Text(text,
+              style: Theme.of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: Theme.of(context).hintColor))
         ]),
       ),
     );
@@ -298,12 +311,19 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
       persistent: true,
       builder: (_, controller) {
         return Flash(
-          margin: EdgeInsets.symmetric(horizontal: 16),
+          margin: EdgeInsets.only(left: 16, right: 16, top: 12),
           controller: controller,
-          backgroundColor: Theme.of(context).primaryColorLight,
-          brightness: Brightness.light,
+          backgroundColor:
+              MediaQuery.of(context).platformBrightness == Brightness.light
+                  ? Theme.of(context).primaryColorLight
+                  : Colors.deepOrange[900],
+          brightness: MediaQuery.of(context).platformBrightness,
+          borderColor: Theme.of(context).primaryColor.withOpacity(0.3),
           boxShadows: [
-            BoxShadow(blurRadius: 3, color: Theme.of(context).primaryColorDark)
+            BoxShadow(
+                offset: Offset(0, 2),
+                blurRadius: 3,
+                color: Theme.of(context).hintColor.withOpacity(0.2))
           ],
           borderRadius: BorderRadius.circular(10),
           style: FlashStyle.floating,

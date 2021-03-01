@@ -66,7 +66,7 @@ class _PhoneInputState extends State<PhoneInput> {
     );
   }
 
-  Align _buildNextButton(AuthProvider authProvider, BuildContext context) {
+  _buildNextButton(AuthProvider authProvider, BuildContext context) {
     return Align(
       alignment: Alignment.topRight,
       child: SizedBox(
@@ -117,7 +117,8 @@ class _PhoneInputState extends State<PhoneInput> {
           searchBoxDecoration: InputDecoration(
               hintText: "Search",
               border: InputBorder.none,
-              prefixIcon: Icon(Icons.search)),
+              prefixIcon:
+                  Icon(Icons.search, color: Theme.of(context).hintColor)),
           onInputChanged: (PhoneNumber value) {
             phone = value;
           },

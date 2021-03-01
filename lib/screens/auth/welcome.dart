@@ -20,19 +20,18 @@ class _WelcomeState extends State<Welcome> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  child: Image(image: AssetImage("assets/logo.png")),
+                  child: Image(
+                      color: Color.fromRGBO(255, 255, 255, 0.85),
+                      colorBlendMode: BlendMode.modulate,
+                      image: AssetImage(
+                          MediaQuery.of(context).platformBrightness ==
+                                  Brightness.light
+                              ? "assets/logo.png"
+                              : "assets/logo-white.png")),
                   width: 150,
                   height: 65,
                 ),
                 SizedBox(height: 32),
-                // SizedBox(
-                //   width: 145,
-                //   child: ElevatedButton(
-                //     onPressed: () =>
-                //         Navigator.pushNamed(context, "/create_account"),
-                //     child: Text("Create account"),
-                //   ),
-                // ),
                 SizedBox(
                     width: 100,
                     child: TextButton(
