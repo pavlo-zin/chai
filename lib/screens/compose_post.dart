@@ -1,4 +1,5 @@
-import 'dart:developer';
+import 'dart:developer' as dev;
+import 'dart:math';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:lipsum/lipsum.dart' as lipsum;
 
 class ComposePost extends StatefulWidget {
   @override
@@ -17,6 +19,7 @@ class ComposePost extends StatefulWidget {
 class _ComposePostState extends State<ComposePost> {
   bool _isPostButtonEnabled = false;
   String postText;
+  TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +48,20 @@ class _ComposePostState extends State<ComposePost> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(width: 16),
-                NetworkAvatar(radius: 24, url: currentUser.picUrl),
+                GestureDetector(
+                    onDoubleTap: () {
+                      setState(() {
+                        _controller.text = lipsum.createWord(
+                            numWords: Random().nextInt(20) + 10);
+                        postText = _controller.value.text;
+                        _isPostButtonEnabled = true;
+                      });
+                    },
+                    child: NetworkAvatar(radius: 24, url: currentUser.picUrl)),
                 SizedBox(width: 16),
                 Expanded(
                     child: TextFormField(
+                        controller: _controller,
                         onChanged: (value) {
                           setState(() {
                             _isPostButtonEnabled = value.isNotEmpty;
@@ -81,7 +94,6 @@ class _ComposePostState extends State<ComposePost> {
         child: FloatingActionButton.extended(
           onPressed: () {
             if (_isPostButtonEnabled) {
-              log(postText);
               firestore
                   .submitPost(Post(
                       userInfo: user,
