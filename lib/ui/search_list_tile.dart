@@ -37,6 +37,9 @@ class SearchListTile extends StatelessWidget {
                 .bodyText1
                 .copyWith(fontWeight: FontWeight.w600)),
         subtitle: Text("@${user.username}",
-            style: Theme.of(context).textTheme.subtitle2));
+            style: Theme.of(context)
+                .textTheme
+                .subtitle2
+                .copyWith(color: Theme.of(context).hintColor)));
   }
 }

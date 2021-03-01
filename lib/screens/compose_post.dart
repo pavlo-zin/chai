@@ -24,7 +24,7 @@ class _ComposePostState extends State<ComposePost> {
     final ChaiUser currentUser = ModalRoute.of(context).settings.arguments;
 
     return Container(
-      padding: EdgeInsets.only(top: 16, right: 16),
+      padding: EdgeInsets.only(right: 16),
       color: Theme.of(context).canvasColor,
       child: SafeArea(
         child: Scaffold(
@@ -103,9 +103,10 @@ class _ComposePostState extends State<ComposePost> {
               ? Theme.of(context).primaryColor
               : Theme.of(context).textSelectionColor,
           label: Text("Send",
-              style: Theme.of(context).textTheme.bodyText1.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).canvasColor)),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText1
+                  .copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
         ),
       ),
     );
