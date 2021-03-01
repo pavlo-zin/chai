@@ -23,6 +23,7 @@ class ChaiDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             Container(
+              padding: EdgeInsets.only(left: 8),
               height: 240,
               child: DrawerHeader(
                 child: StreamBuilder<ChaiUser>(
@@ -45,7 +46,11 @@ class ChaiDrawer extends StatelessWidget {
                                     .headline6
                                     .copyWith(fontWeight: FontWeight.w600)),
                             Text("@" + snapshot.data.username,
-                                style: Theme.of(context).textTheme.subtitle1),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle1
+                                    .copyWith(
+                                        color: Theme.of(context).hintColor)),
                             SizedBox(
                               height: 16,
                             ),
@@ -60,19 +65,24 @@ class ChaiDrawer extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: Text('About'),
+              title: Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: Text('About'),
+              ),
               onTap: () {
                 Navigator.of(context).pushNamed("/about");
               },
             ),
             ListTile(
-              title: Text('Sign out'),
+              title: Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Sign out'),
+              ),
               onTap: () => _handleSignOut(context, auth),
             ),
           ],
         ));
   }
-
 
   _handleSignOut(BuildContext context, AuthProvider auth) async {
     await context.read<PrefsProvider>().clear();

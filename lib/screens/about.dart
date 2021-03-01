@@ -13,9 +13,10 @@ class _AboutState extends State<About> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
+        title: Text("About chai"),
       ),
       body: Center(
-        child: Image.asset("assets/tea.gif"),
+        child: Image.network("https://i.giphy.com/media/WQMgnHWQdyZjO/source.gif"),
       ),
     );
   }

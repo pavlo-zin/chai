@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class TimelineEmptyView extends StatelessWidget {
@@ -19,9 +20,13 @@ class TimelineEmptyView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-                height: 80,
-                child: Image(image: AssetImage("assets/chai_icon.png"))),
-            SizedBox(height: 16),
+                height: 96,
+                child: CachedNetworkImage(
+                    color: Colors.deepOrange[700],
+                    colorBlendMode: BlendMode.color,
+                    imageUrl:
+                        "https://i.giphy.com/media/Az1CJ2MEjmsp2/giphy.webp")),
+            SizedBox(height: 32),
             Text("Feels empty here...",
                 style: Theme.of(context).textTheme.headline5),
             SizedBox(height: 8),

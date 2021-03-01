@@ -171,8 +171,10 @@ class _UserDetailsState extends State<UserDetails> {
                       ),
                       Text(
                         "@${user.username}",
-                        style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: Theme.of(context).textTheme.caption.color),
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(color: Theme.of(context).hintColor),
                       ),
                       SizedBox(height: 12),
                       Text(
@@ -188,7 +190,9 @@ class _UserDetailsState extends State<UserDetails> {
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
-                                      .copyWith(fontWeight: FontWeight.bold)),
+                                      .copyWith(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold)),
                               SizedBox(width: 2),
                               Text("Following",
                                   style: Theme.of(context)
@@ -205,9 +209,11 @@ class _UserDetailsState extends State<UserDetails> {
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
-                                      .copyWith(fontWeight: FontWeight.bold)),
+                                      .copyWith(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold)),
                               SizedBox(width: 2),
-                              Text("Following",
+                              Text("Followers",
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
@@ -315,13 +321,14 @@ class _UserDetailsState extends State<UserDetails> {
                 duration: Duration(seconds: 1),
                 context: context,
                 builder: (_, controller) => Flash(
+                    backgroundColor: Theme.of(context).canvasColor,
                     margin: EdgeInsets.symmetric(horizontal: 36),
                     borderRadius: BorderRadius.circular(30),
                     style: FlashStyle.floating,
                     position: FlashPosition.top,
                     controller: controller,
                     child: FlashBar(
-                      message: Text("No"),
+                      message: Text("No", style: Theme.of(context).textTheme.subtitle1),
                     )));
           },
           splashColor: Colors.deepOrange[100],
@@ -441,7 +448,11 @@ class _UserDetailsState extends State<UserDetails> {
         child: Row(children: [
           Icon(icon, size: 18),
           SizedBox(width: 4),
-          Text(text, style: Theme.of(context).textTheme.caption)
+          Text(text,
+              style: Theme.of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: Theme.of(context).hintColor))
         ]),
       ),
     );
