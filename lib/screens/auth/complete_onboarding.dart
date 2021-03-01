@@ -127,7 +127,12 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
               TextFormField(
                   autocorrect: false,
                   enableSuggestions: false,
-                  decoration: InputDecoration(hintText: "Name"),
+                  decoration: InputDecoration(
+                      hintText: "Name",
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).disabledColor),
+                      )),
                   keyboardType: TextInputType.name,
                   validator: (value) =>
                       value.length > 2 ? null : "Name can't be empty",
@@ -147,6 +152,10 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                   controller: _usernameText,
                   decoration: InputDecoration(
                       hintText: "Username",
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).disabledColor),
+                      ),
                       errorText:
                           _usernameTaken ? "Username already taken" : null),
                   keyboardType: TextInputType.name,

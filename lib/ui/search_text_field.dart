@@ -22,23 +22,26 @@ class SearchTextField extends StatelessWidget {
         autocorrect: false,
         enableSuggestions: false,
         decoration: InputDecoration(
-            fillColor: Colors.deepOrange[50],
+            fillColor:
+                MediaQuery.of(context).platformBrightness == Brightness.dark
+                    ? Colors.deepOrange.withOpacity(0.2)
+                    : Colors.deepOrange[50],
             filled: true,
             prefixIcon: Icon(Icons.search),
             suffixIcon: _isCloseIconVisible
                 ? Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: IconButton(
-                color: Colors.deepOrangeAccent,
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                },
-              ),
-            )
+                    data: ThemeData(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: IconButton(
+                      color: Colors.deepOrangeAccent,
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    ),
+                  )
                 : null,
             contentPadding: EdgeInsets.symmetric(horizontal: 16),
             hintText: "Search",

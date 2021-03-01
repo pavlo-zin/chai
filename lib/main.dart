@@ -17,9 +17,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'common/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,21 +56,8 @@ class ChaiApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Cherry',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          iconTheme: IconThemeData(color: Colors.black45),
-          canvasColor: Colors.white,
-          cupertinoOverrideTheme: CupertinoThemeData(
-              textTheme:
-                  CupertinoTextThemeData(textStyle: GoogleFonts.notoSans())),
-          textTheme: GoogleFonts.notoSansTextTheme(
-            Theme.of(context).textTheme,
-          ),
-          appBarTheme: AppBarTheme(
-              brightness: Brightness.light,
-              iconTheme: IconThemeData(color: Colors.black87),
-              color: Colors.white),
-          primarySwatch: Colors.deepOrange,
-        ),
+        theme: buildAppTheme(context),
+        darkTheme: buildAppTheme(context, dark: true),
         routes: {
           '/': (context) => Authenticator(),
           '/welcome': (context) => Welcome(),
