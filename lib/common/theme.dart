@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 final ButtonStyle textButtonStyle = ButtonStyle(
     textStyle:
@@ -23,14 +22,11 @@ ThemeData buildAppTheme(BuildContext context, {bool dark = false}) {
     textSelectionColor:
         dark ? Colors.deepOrange[900].withOpacity(0.7) : Colors.deepOrange[200],
     canvasColor: dark ? Colors.black : Colors.white,
-    cupertinoOverrideTheme: CupertinoThemeData(
-        textTheme: CupertinoTextThemeData(textStyle: GoogleFonts.notoSans())),
-    textTheme: GoogleFonts.notoSansTextTheme(
-      Theme.of(context).textTheme,
-    ).apply(
+    textTheme: Theme.of(context).textTheme.apply(
         displayColor: dark ? Colors.white70 : Colors.black87,
         bodyColor: dark ? Colors.white.withOpacity(0.85) : Colors.black87),
     appBarTheme: AppBarTheme(
+        elevation: 0,
         brightness: dark ? Brightness.dark : Brightness.light,
         iconTheme: IconThemeData(color: Colors.deepOrange),
         color: dark ? Colors.black : Colors.white),
