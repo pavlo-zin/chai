@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 class SearchTextField extends StatelessWidget {
   const SearchTextField({
@@ -14,20 +15,24 @@ class SearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       height: 38,
+      alignment: Alignment.bottomCenter,
       child: TextFormField(
         controller: _searchController,
         autofocus: true,
+        cursorHeight: 16,
         autocorrect: false,
         enableSuggestions: false,
+        textAlignVertical: TextAlignVertical.bottom,
         decoration: InputDecoration(
             fillColor:
                 MediaQuery.of(context).platformBrightness == Brightness.dark
                     ? Colors.deepOrange.withOpacity(0.2)
                     : Colors.deepOrange[50],
             filled: true,
-            prefixIcon: Icon(Icons.search),
+            prefixIcon:
+                Icon(Feather.search, size: 18, color: Colors.deepOrange),
             suffixIcon: _isCloseIconVisible
                 ? Theme(
                     data: ThemeData(
@@ -35,15 +40,18 @@ class SearchTextField extends StatelessWidget {
                       highlightColor: Colors.transparent,
                     ),
                     child: IconButton(
-                      color: Colors.deepOrangeAccent,
-                      icon: Icon(Icons.clear),
+                      color: Colors.deepOrange,
+                      icon: Icon(Feather.x_circle, size: 18),
                       onPressed: () {
                         _searchController.clear();
                       },
                     ),
                   )
                 : null,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16),
+            contentPadding: EdgeInsets.only(top: 20, bottom: 9),
+            //C
+            isDense: true,
+            // hange this value to custom as you like
             hintText: "Search",
             border: OutlineInputBorder(
                 borderSide: BorderSide.none,

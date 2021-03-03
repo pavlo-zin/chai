@@ -44,7 +44,7 @@ class ChaiDrawer extends StatelessWidget {
                                 style: Theme.of(context)
                                     .textTheme
                                     .headline6
-                                    .copyWith(fontWeight: FontWeight.w600)),
+                                    .copyWith(fontWeight: FontWeight.bold)),
                             Text("@" + snapshot.data.username,
                                 style: Theme.of(context)
                                     .textTheme
