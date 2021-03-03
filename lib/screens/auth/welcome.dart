@@ -11,8 +11,6 @@ class _WelcomeState extends State<Welcome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            backgroundColor: Theme.of(context).canvasColor, elevation: 0),
         body: Center(
           child: Container(
             padding: EdgeInsets.all(56),
@@ -21,8 +19,6 @@ class _WelcomeState extends State<Welcome> {
               children: [
                 SizedBox(
                   child: Image(
-                      color: Color.fromRGBO(255, 255, 255, 0.85),
-                      colorBlendMode: BlendMode.modulate,
                       image: AssetImage(
                           MediaQuery.of(context).platformBrightness ==
                                   Brightness.light

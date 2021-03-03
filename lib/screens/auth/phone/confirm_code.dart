@@ -50,7 +50,7 @@ class _ConfirmCodeState extends State<ConfirmCode> {
                   builder: (context, snapshot) {
                     return snapshot.hasData
                         ? Text("${phone.dialCode} ${snapshot.data}",
-                            style: Theme.of(context).textTheme.headline4)
+                            style: Theme.of(context).textTheme.headline4.copyWith(fontSize: 30))
                         : Text("");
                   }),
               SizedBox(height: 8),

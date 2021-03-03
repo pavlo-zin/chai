@@ -32,7 +32,7 @@ class TimelineEmptyView extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               "Go ahead and search for someone to follow or write something yourself!",
-              style: Theme.of(context).textTheme.bodyText1,
+              style: Theme.of(context).textTheme.bodyText1.copyWith(fontWeight: FontWeight.normal),
               textAlign: TextAlign.center,
             ),
           ],

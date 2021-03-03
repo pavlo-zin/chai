@@ -5,6 +5,7 @@ import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/ui/network_avatar.dart';
+import 'package:chai/ui/timeline_list_tile.dart';
 import 'package:flash/flash.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -167,7 +168,7 @@ class _UserDetailsState extends State<UserDetails> {
                         style: Theme.of(context)
                             .textTheme
                             .headline6
-                            .copyWith(fontWeight: FontWeight.bold),
+                            .copyWith(fontWeight: FontWeight.w800),
                       ),
                       Text(
                         "@${user.username}",
@@ -199,6 +200,7 @@ class _UserDetailsState extends State<UserDetails> {
                                       .textTheme
                                       .subtitle2
                                       .copyWith(
+                                          fontWeight: FontWeight.normal,
                                           color: Theme.of(context).hintColor))
                             ],
                           ),
@@ -218,6 +220,7 @@ class _UserDetailsState extends State<UserDetails> {
                                       .textTheme
                                       .subtitle2
                                       .copyWith(
+                                          fontWeight: FontWeight.normal,
                                           color: Theme.of(context).hintColor))
                             ],
                           )
@@ -251,7 +254,10 @@ class _UserDetailsState extends State<UserDetails> {
                             padding: EdgeInsets.only(top: 0, bottom: 56),
                             itemCount: snapshot.data.length,
                             itemBuilder: (context, index) {
-                              return buildPostTile(snapshot.data[index], index);
+                              return TimelineListTile(
+                                  context: context,
+                                  post: snapshot.data[index],
+                                  index: index);
                             }),
                       ),
                     ],
@@ -300,9 +306,9 @@ class _UserDetailsState extends State<UserDetails> {
                   following ? "Following" : "Follow",
                   style: TextStyle(
                       color: following
-                          ? Theme.of(context).canvasColor
+                          ? Colors.white
                           : Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold),
+                      fontWeight: FontWeight.w600),
                 )),
           );
         });
@@ -328,7 +334,8 @@ class _UserDetailsState extends State<UserDetails> {
                     position: FlashPosition.top,
                     controller: controller,
                     child: FlashBar(
-                      message: Text("No", style: Theme.of(context).textTheme.subtitle1),
+                      message: Text("No",
+                          style: Theme.of(context).textTheme.subtitle1),
                     )));
           },
           splashColor: Colors.deepOrange[100],
@@ -340,129 +347,5 @@ class _UserDetailsState extends State<UserDetails> {
                 fontWeight: FontWeight.bold),
           )),
     );
-  }
-
-  buildPostTile(Post post, int index) {
-    return Column(
-      children: [
-        ListTile(
-            onTap: () {
-              log("Post id ${post.id}, uid: ${post.userInfo.id}");
-            },
-            leading: NetworkAvatar(url: post.userInfo.picUrl),
-            title: Transform.translate(
-              offset: Offset(-8, 0),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Row(
-                  children: [
-                    Flexible(
-                      flex: 0,
-                      child: Text(post.userInfo.displayName,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(fontWeight: FontWeight.bold)),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        padding: EdgeInsets.only(left: 4),
-                        child: Text(
-                          "@${post.userInfo.username}",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(color: Theme.of(context).hintColor),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text("·",
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(
-                                    color: Theme.of(context).hintColor,
-                                    fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 0,
-                      child: Text(_humanizeTime(post.timestamp),
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle2
-                              .copyWith(color: Theme.of(context).hintColor)),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            subtitle: Transform.translate(
-              offset: Offset(-8, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2.0),
-                    child: Text(post.postText,
-                        style: Theme.of(context).textTheme.subtitle1),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildPostIcon(Icons.mode_comment_outlined, "13", () {},
-                          padding:
-                              EdgeInsets.only(top: 8, right: 12, bottom: 8)),
-                      _buildPostIcon(Icons.favorite_outline, "69", () {}),
-                      _buildPostIcon(Icons.ios_share, "", () {}),
-                    ],
-                  )
-                ],
-              ),
-            )),
-        Divider(height: 0)
-      ],
-    );
-  }
-
-  _buildPostIcon(IconData icon, String text, VoidCallback onPressed,
-      {EdgeInsets padding}) {
-    return RawMaterialButton(
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      constraints: BoxConstraints(minHeight: 0, minWidth: 0),
-      padding: padding == null
-          ? EdgeInsets.only(top: 8, right: 12, bottom: 8, left: 12)
-          : padding,
-      onPressed: onPressed,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        child: Row(children: [
-          Icon(icon, size: 18),
-          SizedBox(width: 4),
-          Text(text,
-              style: Theme.of(context)
-                  .textTheme
-                  .caption
-                  .copyWith(color: Theme.of(context).hintColor))
-        ]),
-      ),
-    );
-  }
-
-  _humanizeTime(DateTime time) {
-    return timeago
-        .format(time, locale: 'en_short')
-        .replaceAll(RegExp("~"), '')
-        .replaceAll(RegExp("min"), 'm')
-        .replaceAll(RegExp(" "), '');
   }
 }
