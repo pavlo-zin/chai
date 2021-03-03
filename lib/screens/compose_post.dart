@@ -1,4 +1,3 @@
-import 'dart:developer' as dev;
 import 'dart:math';
 
 import 'package:chai/models/chai_user.dart';
@@ -52,7 +51,7 @@ class _ComposePostState extends State<ComposePost> {
                     onDoubleTap: () {
                       setState(() {
                         _controller.text = lipsum.createWord(
-                            numWords: Random().nextInt(20) + 10);
+                            numWords: Random().nextInt(30) + 5);
                         postText = _controller.value.text;
                         _isPostButtonEnabled = true;
                       });
@@ -94,6 +93,9 @@ class _ComposePostState extends State<ComposePost> {
         child: FloatingActionButton.extended(
           onPressed: () {
             if (_isPostButtonEnabled) {
+              setState(() {
+                _isPostButtonEnabled = false;
+              });
               firestore
                   .submitPost(Post(
                       userInfo: user,
@@ -118,7 +120,7 @@ class _ComposePostState extends State<ComposePost> {
               style: Theme.of(context)
                   .textTheme
                   .bodyText1
-                  .copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+                  .copyWith(color: Colors.white)),
         ),
       ),
     );

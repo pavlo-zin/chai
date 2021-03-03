@@ -9,12 +9,12 @@ class AuthProvider {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: phone,
       verificationCompleted: (PhoneAuthCredential credential) {
-        // android only
+        // todo android only
       },
       verificationFailed: error,
       codeSent: codeSent,
       codeAutoRetrievalTimeout: (String verificationId) {
-        // android only
+        // todo android only
       },
     );
   }
@@ -25,7 +25,7 @@ class AuthProvider {
 
     await FirebaseAuth.instance
         .signInWithCredential(phoneAuthCredential)
-        .catchError((e) => log("signInWithPhone error" + e));
+        .catchError((e) => log("signInWithPhone error ${e.toString()}"));
   }
 
   Future<void> signOut() async {

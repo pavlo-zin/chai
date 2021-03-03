@@ -4,6 +4,7 @@ import 'package:chai/screens/prefs_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
 
@@ -49,7 +50,7 @@ class _PhoneInputState extends State<PhoneInput> {
                           child: Text(
                             "Please choose your country code and enter your phone number",
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyText1,
+                            style: Theme.of(context).textTheme.bodyText2,
                           ),
                         ),
                         SizedBox(height: 24),
@@ -76,7 +77,8 @@ class _PhoneInputState extends State<PhoneInput> {
               if (_formKey.currentState.validate()) {
                 log(phone.toString());
                 authProvider.verifyPhoneNumber(phone.phoneNumber, error: (e) {
-                  _showSnackBar(_scaffoldKey, e.message);
+                  _scaffoldKey.currentState
+                      .showSnackBar(SnackBar(content: Text(e.toString())));
                 }, codeSent: (String id, int resendToken) {
                   final prefs = context.read<PrefsProvider>();
                   prefs.setVerificationId(id);
@@ -93,7 +95,7 @@ class _PhoneInputState extends State<PhoneInput> {
     );
   }
 
-  Widget _buildPhoneNumberInput(BuildContext context) {
+  _buildPhoneNumberInput(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 56),
       child: Form(
@@ -117,17 +119,12 @@ class _PhoneInputState extends State<PhoneInput> {
           searchBoxDecoration: InputDecoration(
               hintText: "Search",
               border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 15),
               prefixIcon:
-                  Icon(Icons.search, color: Theme.of(context).hintColor)),
-          onInputChanged: (PhoneNumber value) {
-            phone = value;
-          },
+                  Icon(Feather.search, size: 18, color: Theme.of(context).hintColor)),
+          onInputChanged: (PhoneNumber value) => phone = value,
         ),
       ),
     );
-  }
-
-  void _showSnackBar(GlobalKey<ScaffoldState> key, String message) {
-    key.currentState.showSnackBar(SnackBar(content: Text(message)));
   }
 }

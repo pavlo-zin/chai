@@ -54,7 +54,6 @@ class ChaiApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Cherry',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(context),
         darkTheme: buildAppTheme(context, dark: true),

@@ -21,6 +21,7 @@ class SearchListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
         onTap: onTap,
+        dense: true,
         leading: Padding(
           padding: const EdgeInsets.only(top: 4.0, left: 2),
           child: Hero(
@@ -37,9 +38,8 @@ class SearchListTile extends StatelessWidget {
                 .bodyText1
                 .copyWith(fontWeight: FontWeight.w600)),
         subtitle: Text("@${user.username}",
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: Theme.of(context).hintColor)));
+            style: Theme.of(context).textTheme.subtitle2.copyWith(
+                color: Theme.of(context).hintColor,
+                fontWeight: FontWeight.normal)));
   }
 }
