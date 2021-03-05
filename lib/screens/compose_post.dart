@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
-import 'package:chai/screens/firestore_provider.dart';
+import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/ui/network_avatar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

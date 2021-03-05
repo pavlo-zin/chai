@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
-import 'package:chai/screens/firestore_provider.dart';
+import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/ui/network_avatar.dart';
 import 'package:chai/ui/timeline_list_tile.dart';
 import 'package:flash/flash.dart';
