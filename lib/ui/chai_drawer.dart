@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:chai/models/chai_user.dart';
-import 'package:chai/screens/auth/auth_provider.dart';
-import 'package:chai/screens/firestore_provider.dart';
-import 'package:chai/screens/prefs_provider.dart';
+import 'package:chai/providers/auth_provider.dart';
+import 'package:chai/providers/firestore_provider.dart';
+import 'package:chai/providers/prefs_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

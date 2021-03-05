@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
-import 'package:chai/screens/auth/auth_provider.dart';
-import 'package:chai/screens/firestore_provider.dart';
+import 'package:chai/providers/auth_provider.dart';
+import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/ui/chai_drawer.dart';
 import 'package:chai/ui/timeline_empty_view.dart';
 import 'package:chai/ui/timeline_list_tile.dart';

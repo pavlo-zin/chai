@@ -1,5 +1,5 @@
 import 'package:chai/models/chai_user.dart';
-import 'package:chai/screens/firestore_provider.dart';
+import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/ui/search_list_tile.dart';
 import 'package:chai/ui/search_text_field.dart';
 import 'package:flutter/cupertino.dart';

@@ -1,15 +1,15 @@
 import 'dart:developer';
 
+import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/screens/about.dart';
-import 'package:chai/screens/auth/auth_provider.dart';
+import 'package:chai/providers/auth_provider.dart';
 import 'package:chai/screens/auth/authenticator.dart';
 import 'package:chai/screens/auth/complete_onboarding.dart';
 import 'package:chai/screens/auth/phone/confirm_code.dart';
 import 'package:chai/screens/auth/phone/phone_input.dart';
 import 'package:chai/screens/auth/welcome.dart';
 import 'package:chai/screens/compose_post.dart';
-import 'package:chai/screens/firestore_provider.dart';
-import 'package:chai/screens/prefs_provider.dart';
+import 'package:chai/providers/prefs_provider.dart';
 import 'package:chai/screens/search.dart';
 import 'package:chai/screens/timeline.dart';
 import 'package:chai/screens/user_details.dart';
