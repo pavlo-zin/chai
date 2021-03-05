@@ -115,9 +115,25 @@ class FirestoreProvider {
   }
 
   Future<void> submitPost(Post post) async {
-    // ignore: missing_return
-    return firestore.runTransaction((transaction) {
-      transaction.set(
+    WriteBatch batch = firestore.batch();
+
+    firestore
+        .collection('users')
+        .doc(currentUid)
+        .collection('followers')
+        .get()
+        .then((querySnapshot) {
+      querySnapshot.docs.forEach((document) {
+        batch.set(
+            firestore
+                .collection('users')
+                .doc(document.id)
+                .collection('posts')
+                .doc(),
+            post.toMap());
+      });
+
+      batch.set(
           firestore
               .collection('users')
               .doc(currentUid)
@@ -125,25 +141,7 @@ class FirestoreProvider {
               .doc(),
           post.toMap());
 
-      WriteBatch batch = firestore.batch();
-      firestore
-          .collection('users')
-          .doc(currentUid)
-          .collection('followers')
-          .get()
-          .then((querySnapshot) {
-        querySnapshot.docs.forEach((document) {
-          batch.set(
-              firestore
-                  .collection('users')
-                  .doc(document.id)
-                  .collection('posts')
-                  .doc(),
-              post.toMap());
-        });
-
-        return batch.commit();
-      });
+      return batch.commit();
     });
   }
 
