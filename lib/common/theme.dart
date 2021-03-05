@@ -19,8 +19,10 @@ ThemeData buildAppTheme(BuildContext context, {bool dark = false}) {
     dividerColor: dark ? Colors.white24 : Colors.black12,
     disabledColor: dark ? Colors.white54 : Colors.black45,
     hintColor: dark ? Colors.white54 : Colors.black54,
-    textSelectionColor:
-        dark ? Colors.deepOrange[900].withOpacity(0.7) : Colors.deepOrange[200],
+    textSelectionTheme: TextSelectionThemeData(
+        selectionColor: dark
+            ? Colors.deepOrange[900].withOpacity(0.7)
+            : Colors.deepOrange[200]),
     canvasColor: dark ? Colors.black : Colors.white,
     textTheme: Theme.of(context).textTheme.apply(
         displayColor: dark ? Colors.white70 : Colors.black87,
