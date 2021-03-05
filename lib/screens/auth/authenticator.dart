@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:chai/screens/auth/welcome.dart';
-import 'package:chai/screens/prefs_provider.dart';
+import 'package:chai/providers/prefs_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
