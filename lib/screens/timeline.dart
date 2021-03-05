@@ -7,12 +7,10 @@ import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/ui/chai_drawer.dart';
 import 'package:chai/ui/timeline_empty_view.dart';
 import 'package:chai/ui/timeline_list_tile.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:flash/flash.dart';
@@ -56,23 +54,20 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).canvasColor,
-      child: Scaffold(
-        drawer: ChaiDrawer(authProvider),
-        body: StreamBuilder<List<Post>>(
-            stream: postsStream,
-            builder: (context, snapshot) {
-              return SafeArea(
-                bottom: false,
-                child: CustomScrollView(slivers: [
-                  _buildAppBar(context),
-                  _buildTimelineView(snapshot)
-                ]),
-              );
-            }),
-        floatingActionButton: _buildFab(context, user),
-      ),
+    return Scaffold(
+      drawer: ChaiDrawer(authProvider),
+      body: StreamBuilder<List<Post>>(
+          stream: postsStream,
+          builder: (context, snapshot) {
+            return SafeArea(
+              bottom: false,
+              child: CustomScrollView(slivers: [
+                _buildAppBar(context),
+                _buildTimelineView(snapshot)
+              ]),
+            );
+          }),
+      floatingActionButton: _buildFab(context, user),
     );
   }
 

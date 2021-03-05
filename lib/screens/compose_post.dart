@@ -25,102 +25,101 @@ class _ComposePostState extends State<ComposePost> {
     final firestore = context.read<FirestoreProvider>();
     final ChaiUser currentUser = ModalRoute.of(context).settings.arguments;
 
-    return Container(
-      padding: EdgeInsets.only(right: 16),
-      color: Theme.of(context).canvasColor,
-      child: SafeArea(
-        child: Scaffold(
-            body: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("Cancel",
-                        style: TextStyle(fontWeight: FontWeight.w600))),
-                _buildSendFab(firestore, currentUser, context),
-              ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(width: 16),
-                GestureDetector(
-                    onDoubleTap: () {
-                      setState(() {
-                        _controller.text = lipsum.createWord(
-                            numWords: Random().nextInt(30) + 5);
-                        postText = _controller.value.text;
-                        _isPostButtonEnabled = true;
-                      });
-                    },
-                    child: NetworkAvatar(radius: 24, url: currentUser.picUrl)),
-                SizedBox(width: 16),
-                Expanded(
-                    child: TextFormField(
-                        controller: _controller,
-                        onChanged: (value) {
-                          setState(() {
-                            _isPostButtonEnabled = value.isNotEmpty;
-                            postText = value;
-                          });
-                        },
-                        textCapitalization: TextCapitalization.sentences,
-                        maxLength: null,
-                        maxLines: null,
-                        autofocus: true,
-                        keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(
-                            hintText: "What's happening?",
-                            border: InputBorder.none)))
-              ],
-            ),
-          ],
-        )),
+    return Scaffold(
+        body: SafeArea(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CupertinoButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("Cancel",
+                      style: TextStyle(fontWeight: FontWeight.w600))),
+              _buildSendFab(firestore, currentUser, context),
+            ],
+          ),
+          SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 16),
+              GestureDetector(
+                  onDoubleTap: () {
+                    setState(() {
+                      _controller.text =
+                          lipsum.createWord(numWords: Random().nextInt(30) + 5);
+                      postText = _controller.value.text;
+                      _isPostButtonEnabled = true;
+                    });
+                  },
+                  child: NetworkAvatar(radius: 24, url: currentUser.picUrl)),
+              SizedBox(width: 16),
+              Expanded(
+                  child: TextFormField(
+                      controller: _controller,
+                      onChanged: (value) {
+                        setState(() {
+                          _isPostButtonEnabled = value.isNotEmpty;
+                          postText = value;
+                        });
+                      },
+                      textCapitalization: TextCapitalization.sentences,
+                      maxLength: null,
+                      maxLines: null,
+                      autofocus: true,
+                      keyboardType: TextInputType.multiline,
+                      decoration: InputDecoration(
+                          hintText: "What's happening?",
+                          border: InputBorder.none)))
+            ],
+          ),
+        ],
       ),
-    );
+    ));
   }
 
   _buildSendFab(
       FirestoreProvider firestore, ChaiUser user, BuildContext context) {
-    return SizedBox(
-      width: 72,
-      height: 36,
-      child: AbsorbPointer(
-        absorbing: !_isPostButtonEnabled,
-        child: FloatingActionButton.extended(
-          onPressed: () {
-            if (_isPostButtonEnabled) {
-              setState(() {
-                _isPostButtonEnabled = false;
-              });
-              firestore
-                  .submitPost(Post(
-                      userInfo: user,
-                      postText: postText,
-                      timestamp: DateTime.now()))
-                  .then((value) {
-                Navigator.pop(context, true);
-              });
-            } else {
-              return null;
-            }
-          },
-          elevation: 0,
-          highlightElevation: 0,
-          splashColor: _isPostButtonEnabled
-              ? Theme.of(context).splashColor
-              : Colors.transparent,
-          backgroundColor: _isPostButtonEnabled
-              ? Theme.of(context).primaryColor
-              : Theme.of(context).textSelectionColor,
-          label: Text("Send",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText1
-                  .copyWith(color: Colors.white)),
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: SizedBox(
+        width: 72,
+        height: 36,
+        child: AbsorbPointer(
+          absorbing: !_isPostButtonEnabled,
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              if (_isPostButtonEnabled) {
+                setState(() {
+                  _isPostButtonEnabled = false;
+                });
+                firestore
+                    .submitPost(Post(
+                        userInfo: user,
+                        postText: postText,
+                        timestamp: DateTime.now()))
+                    .then((value) {
+                  Navigator.pop(context, true);
+                });
+              } else {
+                return null;
+              }
+            },
+            elevation: 0,
+            highlightElevation: 0,
+            splashColor: _isPostButtonEnabled
+                ? Theme.of(context).splashColor
+                : Colors.transparent,
+            backgroundColor: _isPostButtonEnabled
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).textSelectionTheme.selectionColor,
+            label: Text("Send",
+                style: Theme.of(context).textTheme.bodyText1.copyWith(
+                    color: _isPostButtonEnabled
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.8))),
+          ),
         ),
       ),
     );
