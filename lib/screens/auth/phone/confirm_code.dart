@@ -1,11 +1,11 @@
-import 'package:chai/screens/prefs_provider.dart';
+import 'package:chai/providers/prefs_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
 
-import '../auth_provider.dart';
+import '../../../providers/auth_provider.dart';
 
 class ConfirmCode extends StatefulWidget {
   @override
