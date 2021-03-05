@@ -7,12 +7,10 @@ import 'package:chai/screens/firestore_provider.dart';
 import 'package:chai/ui/network_avatar.dart';
 import 'package:chai/ui/timeline_list_tile.dart';
 import 'package:flash/flash.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class UserDetails extends StatefulWidget {
   @override
@@ -51,7 +49,6 @@ class _UserDetailsState extends State<UserDetails> {
 
     return Scaffold(
         body: NestedScrollView(
-            physics: const BouncingScrollPhysics(),
             controller: _controller,
             headerSliverBuilder:
                 (BuildContext context, bool innerBoxIsScrolled) {
@@ -107,6 +104,7 @@ class _UserDetailsState extends State<UserDetails> {
                                     AnimatedOpacity(
                                   duration: Duration(milliseconds: 300),
                                   opacity: offset > 30 ? 0 : 1,
+                                  curve: Curves.fastOutSlowIn,
                                   child: NetworkAvatar(
                                     drawBorder: true,
                                     radius: offset == 0
