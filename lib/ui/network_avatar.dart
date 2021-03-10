@@ -5,12 +5,14 @@ class NetworkAvatar extends StatelessWidget {
   final String url;
   final double radius;
   final bool drawBorder;
+  final bool useColorAsPlaceholder;
 
   const NetworkAvatar({
     Key key,
     this.url,
     this.radius = 24,
     this.drawBorder = false,
+    this.useColorAsPlaceholder = false,
   }) : super(key: key);
 
   @override
@@ -28,10 +30,12 @@ class NetworkAvatar extends StatelessWidget {
             ? SizedBox(
                 width: radius * 2,
                 height: radius * 2,
-                child: Image(
-                  image: AssetImage('assets/avatar.png'),
-                  fit: BoxFit.cover,
-                ))
+                child: useColorAsPlaceholder
+                    ? Container(color: Colors.deepOrange[200])
+                    : Image(
+                        image: AssetImage('assets/avatar.png'),
+                        fit: BoxFit.cover,
+                      ))
             : CachedNetworkImage(
                 width: radius * 2,
                 height: radius * 2,
