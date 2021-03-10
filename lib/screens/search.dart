@@ -1,5 +1,6 @@
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/providers/firestore_provider.dart';
+import 'package:chai/screens/user_details.dart';
 import 'package:chai/ui/search_list_tile.dart';
 import 'package:chai/ui/search_text_field.dart';
 import 'package:flutter/cupertino.dart';
@@ -77,7 +78,10 @@ class _SearchState extends State<Search> {
                       index: index,
                       onTap: () {
                         Navigator.pushNamed(context, '/user_details',
-                            arguments: Tuple2(user, "searchProfilePic$index"));
+                            arguments: UserDetailsArgs(
+                                userIsKnown: true,
+                                user: user,
+                                profilePicHeroTag: "searchProfilePic$index"));
                       });
                 });
           }),
