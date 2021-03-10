@@ -9,8 +9,22 @@ import 'package:chai/ui/timeline_list_tile.dart';
 import 'package:flash/flash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
+
+class UserDetailsArgs {
+  final bool userIsKnown;
+  final ChaiUser user;
+  final String profilePicHeroTag;
+  final String username;
+
+  UserDetailsArgs(
+      {@required this.userIsKnown,
+      this.user,
+      this.profilePicHeroTag,
+      this.username});
+}
 
 class UserDetails extends StatefulWidget {
   @override
@@ -43,10 +57,91 @@ class _UserDetailsState extends State<UserDetails> {
   @override
   Widget build(BuildContext context) {
     final firestore = context.read<FirestoreProvider>();
-    final userAndIndex = ModalRoute.of(context).settings.arguments as Tuple2;
-    final user = userAndIndex.item1 as ChaiUser;
-    final profilePicHeroTag = userAndIndex.item2;
+    final args = ModalRoute.of(context).settings.arguments as UserDetailsArgs;
 
+    log("user_details build");
+
+    return args.userIsKnown
+        ? _buildUserDetailsView(args, firestore)
+        : FutureBuilder<ChaiUser>(
+            future: firestore.getUserByUsername(args.username),
+            builder: (context, snapshot) {
+              log("connectionState ${snapshot.connectionState}");
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return _buildPlaceholderView(args.username);
+              }
+              if (snapshot.connectionState == ConnectionState.done) {
+                return snapshot.hasData
+                    ? _buildUserDetailsView(
+                        UserDetailsArgs(
+                            userIsKnown: false,
+                            user: snapshot.data,
+                            profilePicHeroTag: ''),
+                        firestore)
+                    : _buildPlaceholderView(args.username, isLoading: false);
+              }
+              return SizedBox.shrink();
+            });
+  }
+
+  _buildPlaceholderView(String username, {bool isLoading = true}) {
+    return Scaffold(
+        body: NestedScrollView(
+            body: isLoading
+                ? SizedBox.shrink()
+                : _buildUserNotFoundView(username),
+            controller: _controller,
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    background: Container(
+                      color: Colors.deepOrange[200],
+                      child: Stack(
+                        alignment: Alignment.bottomLeft,
+                        children: [
+                          Container(
+                            alignment: Alignment.bottomCenter,
+                            height: 60,
+                            color: Theme.of(context).canvasColor,
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 16, bottom: 10),
+                            child: NetworkAvatar(
+                              drawBorder: true,
+                              radius: 40,
+                              useColorAsPlaceholder: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  expandedHeight: 150,
+                ),
+                SliverToBoxAdapter(
+                    child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    isLoading ? '' : username,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6
+                        .copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ))
+              ];
+            }));
+  }
+
+  _buildUserDetailsView(UserDetailsArgs args, FirestoreProvider firestore) {
+    log("_buildUserDetailsView");
+    final ChaiUser user = args.user;
+    final String profilePicTag = args.profilePicHeroTag;
     return Scaffold(
         body: NestedScrollView(
             controller: _controller,
@@ -71,7 +166,7 @@ class _UserDetailsState extends State<UserDetails> {
                   flexibleSpace: FlexibleSpaceBar(
                     collapseMode: CollapseMode.pin,
                     background: Container(
-                      color: Colors.deepOrangeAccent[100],
+                      color: Colors.deepOrange[200],
                       child: Stack(
                         alignment: Alignment.bottomLeft,
                         children: [
@@ -97,7 +192,7 @@ class _UserDetailsState extends State<UserDetails> {
                             padding:
                                 const EdgeInsets.only(left: 16, bottom: 10),
                             child: Hero(
-                              tag: profilePicHeroTag,
+                              tag: profilePicTag,
                               child: ValueListenableBuilder(
                                 valueListenable: _offset,
                                 builder: (context, offset, _) =>
@@ -117,7 +212,7 @@ class _UserDetailsState extends State<UserDetails> {
                                 ),
                               ),
                             ),
-                          ),
+                          )
                         ],
                       ),
                     ),
@@ -230,37 +325,56 @@ class _UserDetailsState extends State<UserDetails> {
                 ))
               ];
             },
-            body: StreamBuilder<List<Post>>(
-                stream: firestore.getPosts(uid: user.id, onlyForThisUser: true),
+            body: FutureBuilder<ChaiUser>(
+                future: Future.delayed(
+                    Duration(milliseconds: args.userIsKnown ? 0 : 300)),
                 builder: (context, snapshot) {
-                  if (snapshot.hasError)
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Center(
-                          child: SelectableText(snapshot.error.toString(),
-                              style: Theme.of(context).textTheme.headline6)),
+                      padding: const EdgeInsets.all(12.0),
+                      child: Align(
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                backgroundColor: null,
+                              ))),
                     );
-                  if (!snapshot.hasData)
-                    return Center(child: CircularProgressIndicator());
-                  return Column(
-                    children: [
-                      Divider(
-                        height: 8,
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                            padding: EdgeInsets.only(top: 0, bottom: 56),
-                            itemCount: snapshot.data.length,
-                            itemBuilder: (context, index) {
-                              return TimelineListTile(
-                                  context: context,
-                                  post: snapshot.data[index],
-                                  index: index);
-                            }),
-                      ),
-                    ],
-                  );
+                  }
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return _buildTimeline(firestore, user);
+                  }
+                  return SizedBox.shrink();
                 })));
+  }
+
+  _buildTimeline(FirestoreProvider firestore, ChaiUser user) {
+    return StreamBuilder<List<Post>>(
+        stream: firestore.getPosts(uid: user.id, onlyForThisUser: true),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.active)
+            return Column(
+              children: [
+                Divider(
+                  height: 8,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                      padding: EdgeInsets.only(top: 0, bottom: 56),
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        return TimelineListTile(
+                            context: context,
+                            post: snapshot.data[index],
+                            index: index);
+                      }),
+                ),
+              ],
+            );
+          return SizedBox.shrink();
+        });
   }
 
   buildFollowButton(
@@ -345,5 +459,26 @@ class _UserDetailsState extends State<UserDetails> {
                 fontWeight: FontWeight.bold),
           )),
     );
+  }
+
+  _buildUserNotFoundView(String username) {
+    return Center(
+        child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(FontAwesome5.frown, size: 69, color: Colors.deepOrange[200]),
+          SizedBox(height: 24),
+          Text("This account doesn't exist",
+              style: Theme.of(context).textTheme.headline6),
+          SizedBox(height: 4),
+          Text(
+            "Try searching for another",
+            style: Theme.of(context).textTheme.subtitle2,
+          ),
+        ],
+      ),
+    ));
   }
 }

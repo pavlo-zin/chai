@@ -43,6 +43,16 @@ class FirestoreProvider {
         .map((doc) => ChaiUser.fromMap(doc.data(), doc.id));
   }
 
+  Future<ChaiUser> getUserByUsername(String username) async {
+    return firestore
+        .collection('users')
+        .where('_searchUsername',
+            isEqualTo: username.toLowerCase().replaceAll('@', ''))
+        .get()
+        .then((value) =>
+            value.docs.map((doc) => ChaiUser.fromMap(doc.data(), doc.id)).last);
+  }
+
   Future<void> followUser(ChaiUser toFollow, ChaiUser current) async {
     log("followUser: ${toFollow.displayName}, current: ${current.displayName}");
 

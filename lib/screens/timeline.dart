@@ -4,6 +4,7 @@ import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/providers/auth_provider.dart';
 import 'package:chai/providers/firestore_provider.dart';
+import 'package:chai/screens/user_details.dart';
 import 'package:chai/ui/chai_drawer.dart';
 import 'package:chai/ui/timeline_empty_view.dart';
 import 'package:chai/ui/timeline_list_tile.dart';
@@ -54,20 +55,28 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: ChaiDrawer(authProvider),
-      body: StreamBuilder<List<Post>>(
-          stream: postsStream,
-          builder: (context, snapshot) {
-            return SafeArea(
-              bottom: false,
-              child: CustomScrollView(slivers: [
-                _buildAppBar(context),
-                _buildTimelineView(snapshot)
-              ]),
-            );
-          }),
-      floatingActionButton: _buildFab(context, user),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: MediaQuery.of(context).platformBrightness == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Container(
+        color: Theme.of(context).canvasColor,
+        child: SafeArea(
+          bottom: false,
+          child: Scaffold(
+            drawer: ChaiDrawer(authProvider),
+            body: StreamBuilder<List<Post>>(
+                stream: postsStream,
+                builder: (context, snapshot) {
+                  return CustomScrollView(slivers: [
+                    _buildAppBar(context),
+                    _buildTimelineView(snapshot)
+                  ]);
+                }),
+            floatingActionButton: _buildFab(context, user),
+          ),
+        ),
+      ),
     );
   }
 
@@ -202,6 +211,9 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
 
   _openUserDetails(Post post, int index) {
     Navigator.pushNamed(context, '/user_details',
-        arguments: Tuple2(post.userInfo, "timelineProfilePic$index"));
+        arguments: UserDetailsArgs(
+            userIsKnown: true,
+            user: post.userInfo,
+            profilePicHeroTag: "timelineProfilePic$index"));
   }
 }
