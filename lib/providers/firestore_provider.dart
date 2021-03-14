@@ -174,6 +174,28 @@ class FirestoreProvider {
         .toList());
   }
 
+  Future<List<Post>> getPostsFuture(
+      {String uid, bool onlyForThisUser = false, Duration delay}) async {
+    await Future.delayed(delay);
+
+    final String userId = uid == null ? currentUid : uid;
+
+    log("getPosts for user: $userId");
+
+    var postsQuery = firestore
+        .collection('users')
+        .doc(userId)
+        .collection('posts')
+        .orderBy('timestamp', descending: true);
+
+    if (onlyForThisUser)
+      postsQuery = postsQuery.where('userInfo.id', isEqualTo: userId);
+
+    return postsQuery.get().then((value) => value.docs
+        .map((document) => Post.fromMap(document.data(), document.id, userId))
+        .toList());
+  }
+
   Future<List<ChaiUser>> searchUsers(String query) async {
     if (query.isEmpty) return List.empty();
 
