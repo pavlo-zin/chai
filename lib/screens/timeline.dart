@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:chai/common/file_utils.dart';
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/providers/auth_provider.dart';
@@ -15,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:flash/flash.dart';
-import 'package:tuple/tuple.dart';
 
 import 'compose_post.dart';
 
@@ -29,6 +30,7 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
   Stream<List<Post>> postsStream;
   Stream<ChaiUser> user;
   AuthProvider authProvider;
+  ValueNotifier<bool> _isLoading = ValueNotifier(false);
 
   @override
   void initState() {
@@ -84,15 +86,29 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
     return SliverAppBar(
       floating: true,
       centerTitle: true,
-      title: SizedBox(
-          height: 28,
-          child: Image(
-              color: Color.fromRGBO(255, 255, 255, 0.85),
-              colorBlendMode: BlendMode.modulate,
-              image: AssetImage(
-                  MediaQuery.of(context).platformBrightness == Brightness.light
+      bottom: PreferredSize(
+          preferredSize: Size(double.infinity, 4.0),
+          child: ValueListenableBuilder(
+            valueListenable: _isLoading,
+            builder: (context, isLoading, _) => Visibility(
+              visible: isLoading,
+              child: SizedBox(height: 4.0, child: LinearProgressIndicator()),
+            ),
+          )),
+      title: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+              height: 28,
+              child: Image(
+                  color: Color.fromRGBO(255, 255, 255, 0.85),
+                  colorBlendMode: BlendMode.modulate,
+                  image: AssetImage(MediaQuery.of(context).platformBrightness ==
+                          Brightness.light
                       ? "assets/logo.png"
                       : "assets/logo-white.png"))),
+        ],
+      ),
       leading: IconButton(
           onPressed: () => Scaffold.of(context).openDrawer(),
           icon: Icon(Feather.menu)),
@@ -150,14 +166,14 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                   elevation: 2,
                   highlightElevation: 2,
                   splashColor: Colors.transparent,
-                  onPressed: () => _composePostAndWaitForResult(snapshot.data),
+                  onPressed: () => _composePost(snapshot.data),
                   child: Icon(Feather.feather, size: 26),
                 )
               : SizedBox.shrink();
         });
   }
 
-  _composePostAndWaitForResult(ChaiUser user) async {
+  _composePost(ChaiUser user) async {
     final result = await Navigator.push(
         context,
         PageTransition(
@@ -167,7 +183,41 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
             child: ComposePost(),
             settings: RouteSettings(arguments: user),
             curve: Curves.fastOutSlowIn));
-    if (result != null) _showSentSuccess();
+
+    await _handleComposePostResult(user, result);
+  }
+
+  _handleComposePostResult(ChaiUser user, ComposePostResult result) async {
+    if (result == null) return;
+    
+    final firestore = context.read<FirestoreProvider>();
+    var post;
+
+    _isLoading.value = true;
+    
+    if (result.imagePath != null) {
+      final imageFile = File(result.imagePath);
+
+      final color = await FileUtils.getImagePalette(imageFile);
+      final size = await FileUtils.getImageSize(imageFile);
+
+      final imageUrl = await firestore.uploadPostImage(imageFile);
+      post = Post(
+          userInfo: user,
+          postText: result.text,
+          imageInfo: PostImageInfo(
+              url: imageUrl,
+              size: size,
+              placeholderColor: color),
+          timestamp: DateTime.now());
+    } else {
+      post = Post(
+          userInfo: user, postText: result.text, timestamp: DateTime.now());
+    }
+
+    await firestore.submitPost(post);
+    _isLoading.value = false;
+    _showSentSuccess();
   }
 
   _showSentSuccess() {
