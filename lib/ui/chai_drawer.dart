@@ -24,7 +24,7 @@ class ChaiDrawer extends StatelessWidget {
           children: <Widget>[
             Container(
               padding: EdgeInsets.only(left: 8),
-              height: 240,
+              height: 200,
               child: DrawerHeader(
                 child: StreamBuilder<ChaiUser>(
                     stream: context.read<FirestoreProvider>().getUser(),
