@@ -223,18 +223,21 @@ class FirestoreProvider {
         value.expand((element) => element).toList().toSet().toList());
   }
 
-  Future<String> uploadAvatar(String uid, File file) async {
-    log("uploadAvatar");
+  Future<String> uploadAvatar(File file) async {
+    final uploadPath = 'uploads/avatars/$currentUid/avatar.jpg';
+    return _uploadImage(file, uploadPath);
+  }
+
+  Future<String> uploadPostImage(File file) async {
+    final fileName = '${DateTime.now().toIso8601String()}.jpg';
+    final uploadPath = 'uploads/postPics/$currentUid/$fileName';
+    return _uploadImage(file, uploadPath);
+  }
+
+  Future<String> _uploadImage(File file, String uploadPath) async {
     try {
-      firebase_storage.TaskSnapshot storageTaskSnapshot =
-          await storage.ref('uploads/avatars/$uid/avatar.jpg').putFile(file);
-      print(storageTaskSnapshot.ref.getDownloadURL());
-      log("uploadAvatar file is put");
-
-      var url = await storageTaskSnapshot.ref.getDownloadURL();
-      log("uploadAvatar url $url");
-
-      return url;
+      final uploadTask = await storage.ref(uploadPath).putFile(file);
+      return await uploadTask.ref.getDownloadURL();
     } catch (e) {
       log(e);
       return Future.error(e);

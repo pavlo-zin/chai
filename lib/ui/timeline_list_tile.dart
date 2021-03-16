@@ -1,5 +1,4 @@
-import 'dart:developer';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/screens/user_details.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +30,7 @@ class TimelineListTile extends StatelessWidget {
       children: [
         ListTile(
             onTap: () {},
+            contentPadding: EdgeInsets.only(left: 16, right: 12),
             leading: GestureDetector(
                 onTap: onProfilePicTap,
                 child: onProfilePicTap == null
@@ -38,93 +38,98 @@ class TimelineListTile extends StatelessWidget {
                     : Hero(
                         tag: 'timelineProfilePic$index',
                         child: NetworkAvatar(url: post.userInfo.picUrl))),
-            title: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Flexible(
-                    flex: 0,
-                    child: Text(post.userInfo.displayName,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                  Flexible(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.only(left: 4),
-                      child: Text(
-                        "@${post.userInfo.username}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: Theme.of(context).hintColor),
-                      ),
+            title: Transform.translate(
+              offset: Offset(-8, 0),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      flex: 0,
+                      child: Text(post.userInfo.displayName,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
-                  ),
-                  Expanded(
-                    flex: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Text("·",
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        padding: EdgeInsets.only(left: 4),
+                        child: Text(
+                          "@${post.userInfo.username}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(
-                                  color: Theme.of(context).hintColor,
-                                  fontWeight: FontWeight.w500)),
+                              .copyWith(color: Theme.of(context).hintColor),
+                        ),
+                      ),
                     ),
-                  ),
-                  StreamBuilder<Object>(
-                      stream: refreshTimeStream,
-                      builder: (context, snapshot) {
-                        return Expanded(
-                          flex: 0,
-                          child: Text(_humanizeTime(post.timestamp),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
-                                      fontWeight: FontWeight.normal,
-                                      color: Theme.of(context).hintColor)),
-                        );
-                      }),
-                ],
+                    Expanded(
+                      flex: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text("·",
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(
+                                    color: Theme.of(context).hintColor,
+                                    fontWeight: FontWeight.w500)),
+                      ),
+                    ),
+                    StreamBuilder<Object>(
+                        stream: refreshTimeStream,
+                        builder: (context, snapshot) {
+                          return Expanded(
+                            flex: 0,
+                            child: Text(_humanizeTime(post.timestamp),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(
+                                        fontWeight: FontWeight.normal,
+                                        color: Theme.of(context).hintColor)),
+                          );
+                        }),
+                  ],
+                ),
               ),
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                    padding: const EdgeInsets.only(top: 3.0),
-                    child: PostBody(post: post)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    PostIcon(
-                        context: context,
-                        icon: Feather.message_circle,
-                        padding:
-                            EdgeInsets.only(top: 8, right: 12, bottom: 8),
-                        text: '13',
-                        onPressed: () {}),
-                    PostIcon(
-                        context: context,
-                        icon: Feather.heart,
-                        text: '69',
-                        onPressed: () {}),
-                    PostIcon(
-                        context: context,
-                        icon: Feather.share,
-                        onPressed: () {})
-                  ],
-                )
-              ],
-            )
-        ),
+            subtitle: Transform.translate(
+              offset: Offset(-8, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                      padding: const EdgeInsets.only(top: 3.0),
+                      child: PostBody(post: post)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      PostIcon(
+                          context: context,
+                          icon: Feather.message_circle,
+                          padding:
+                              EdgeInsets.only(top: 8, right: 12, bottom: 8),
+                          text: '13',
+                          onPressed: () {}),
+                      PostIcon(
+                          context: context,
+                          icon: Feather.heart,
+                          text: '69',
+                          onPressed: () {}),
+                      PostIcon(
+                          context: context,
+                          icon: Feather.share,
+                          onPressed: () {})
+                    ],
+                  )
+                ],
+              ),
+            )),
         Divider(height: 0)
       ],
     );
@@ -184,37 +189,66 @@ class PostBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ParsedText(
-        text: post.postText,
-        style: Theme.of(context).textTheme.subtitle1,
-        parse: [
-          MatchText(
-              renderWidget: ({String text, String pattern}) {
-                return RawMaterialButton(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                    ),
-                    constraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/user_details',
-                          arguments: UserDetailsArgs(
-                              userIsKnown: false,
-                              username: text,
-                              profilePicHeroTag: ''));
-                    },
-                    child: Text(text,
-                        style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: Theme.of(context).primaryColorDark)));
-              },
-              pattern: r'@[a-zA-Z0-9][a-zA-Z0-9_.]+[a-zA-Z0-9]',
-              regexOptions: RegexOptions(
-                  multiLine: false,
-                  caseSensitive: false,
-                  unicode: false,
-                  dotAll: false))
-        ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        post.postText == null
+            ? SizedBox.shrink()
+            : ParsedText(
+                text: post.postText,
+                style: Theme.of(context).textTheme.subtitle1,
+                parse: [
+                    MatchText(
+                        renderWidget: ({String text, String pattern}) {
+                          return RawMaterialButton(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                              constraints:
+                                  BoxConstraints(minWidth: 0, minHeight: 0),
+                              padding: EdgeInsets.zero,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/user_details',
+                                    arguments: UserDetailsArgs(
+                                        userIsKnown: false,
+                                        username: text,
+                                        profilePicHeroTag: ''));
+                              },
+                              child: Text(text,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle1
+                                      .copyWith(
+                                          color: Theme.of(context)
+                                              .primaryColorDark)));
+                        },
+                        pattern: r'@[a-zA-Z0-9][a-zA-Z0-9_.]+[a-zA-Z0-9]',
+                        regexOptions: RegexOptions(
+                            multiLine: false,
+                            caseSensitive: false,
+                            unicode: false,
+                            dotAll: false))
+                  ]),
+        post.imageInfo == null
+            ? SizedBox.shrink()
+            : Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: AspectRatio(
+                    aspectRatio: post.imageInfo.size.aspectRatio,
+                    child: CachedNetworkImage(
+                        placeholder: (context, _) =>
+                            Container(color: post.imageInfo.placeholderColor),
+                        imageUrl: post.imageInfo.url,
+                        fit: BoxFit.cover),
+                  ),
+                ),
+              ),
+      ],
+    );
   }
 }
 

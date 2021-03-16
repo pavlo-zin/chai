@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:chai/common/file_utils.dart';
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/screens/auth/authenticator.dart';
@@ -10,7 +11,6 @@ import 'package:chai/ui/network_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class CompleteOnboarding extends StatefulWidget {
@@ -22,7 +22,6 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
   final _usernameText = TextEditingController();
   bool _usernameTaken = false;
   String _avatarImageUrl;
-  final picker = ImagePicker();
   AsyncSnapshot<User> userSnapshot;
 
   @override
@@ -87,8 +86,8 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                 width: 112,
                 child: RawMaterialButton(
                   onPressed: () {
-                    getImage().then((value) {
-                      firestore.uploadAvatar(user.uid, File(value.path)).then(
+                    FileUtils.getImage().then((value) {
+                      firestore.uploadAvatar(File(value.path)).then(
                           (value) {
                         log("avatar url $value");
                         setState(() {
@@ -192,13 +191,5 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
         ),
       ),
     ));
-  }
-
-  Future<PickedFile> getImage() async {
-    return await picker.getImage(
-        source: ImageSource.gallery,
-        maxHeight: 300,
-        maxWidth: 300,
-        imageQuality: 69);
   }
 }
