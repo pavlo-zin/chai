@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chai/models/post.dart';
+import 'package:chai/screens/full_screen_image_view.dart';
 import 'package:chai/screens/user_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'network_avatar.dart';
@@ -192,63 +194,98 @@ class PostBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        post.postText == null
-            ? SizedBox.shrink()
-            : ParsedText(
-                text: post.postText,
-                style: Theme.of(context).textTheme.subtitle1,
-                parse: [
-                    MatchText(
-                        renderWidget: ({String text, String pattern}) {
-                          return RawMaterialButton(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              constraints:
-                                  BoxConstraints(minWidth: 0, minHeight: 0),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/user_details',
-                                    arguments: UserDetailsArgs(
-                                        userIsKnown: false,
-                                        username: text,
-                                        profilePicHeroTag: ''));
-                              },
-                              child: Text(text,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle1
-                                      .copyWith(
-                                          color: Theme.of(context)
-                                              .primaryColorDark)));
-                        },
-                        pattern: r'@[a-zA-Z0-9][a-zA-Z0-9_.]+[a-zA-Z0-9]',
-                        regexOptions: RegexOptions(
-                            multiLine: false,
-                            caseSensitive: false,
-                            unicode: false,
-                            dotAll: false))
-                  ]),
-        post.imageInfo == null
-            ? SizedBox.shrink()
-            : Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: AspectRatio(
-                    aspectRatio: post.imageInfo.size.aspectRatio,
-                    child: CachedNetworkImage(
-                        placeholder: (context, _) =>
-                            Container(color: post.imageInfo.placeholderColor),
-                        imageUrl: post.imageInfo.url,
-                        fit: BoxFit.cover),
-                  ),
-                ),
-              ),
+        if (post.postText != null) PostText(post: post),
+        if (post.imageInfo != null) PostImage(post: post),
       ],
     );
+  }
+}
+
+class PostImage extends StatelessWidget {
+  const PostImage({
+    Key key,
+    @required this.post,
+  }) : super(key: key);
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            opaque: false,
+            transitionsBuilder: (BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+                Widget child) => FadeTransition(opacity: animation, child: child),
+            pageBuilder: (_, __, ___) => FullScreenImageView(post.imageInfo),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AspectRatio(
+            aspectRatio: post.imageInfo.size.aspectRatio,
+            child: Hero(
+              tag: post.imageInfo.url,
+              child: CachedNetworkImage(
+                  placeholder: (context, _) =>
+                      Container(color: post.imageInfo.placeholderColor),
+                  imageUrl: post.imageInfo.url,
+                  fit: BoxFit.cover),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PostText extends StatelessWidget {
+  const PostText({
+    Key key,
+    @required this.post,
+  }) : super(key: key);
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    return ParsedText(
+        text: post.postText,
+        style: Theme.of(context).textTheme.subtitle1,
+        parse: [
+          MatchText(
+              renderWidget: ({String text, String pattern}) {
+                return RawMaterialButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                    constraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                    padding: EdgeInsets.zero,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/user_details',
+                          arguments: UserDetailsArgs(
+                              userIsKnown: false,
+                              username: text,
+                              profilePicHeroTag: ''));
+                    },
+                    child: Text(text,
+                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            color: Theme.of(context).primaryColorDark)));
+              },
+              pattern: r'@[a-zA-Z0-9][a-zA-Z0-9_.]+[a-zA-Z0-9]',
+              regexOptions: RegexOptions(
+                  multiLine: false,
+                  caseSensitive: false,
+                  unicode: false,
+                  dotAll: false))
+        ]);
   }
 }
 
