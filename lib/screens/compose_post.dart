@@ -107,7 +107,9 @@ class _ComposePostState extends State<ComposePost> {
                                     controller: _controller,
                                     onChanged: (value) {
                                       setState(() {
-                                        _isPostButtonEnabled = value.isNotEmpty;
+                                        _isPostButtonEnabled =
+                                            value.isNotEmpty ||
+                                                _pickedFile != null;
                                         postText = value;
                                       });
                                     },

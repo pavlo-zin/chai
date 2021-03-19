@@ -574,7 +574,10 @@ class TimelineView extends StatelessWidget {
               sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                 return TimelineListTile(
-                    context: context, post: snapshot.data[index], index: index);
+                    context: context,
+                    post: snapshot.data[index],
+                    index: index,
+                    isUserDetails: true);
               }, childCount: snapshot.data.length)),
             );
           }
