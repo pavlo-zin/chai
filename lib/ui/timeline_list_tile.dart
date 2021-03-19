@@ -11,20 +11,22 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'network_avatar.dart';
 
 class TimelineListTile extends StatelessWidget {
-  const TimelineListTile({
-    Key key,
-    @required this.context,
-    @required this.post,
-    @required this.index,
-    this.onProfilePicTap,
-    this.refreshTimeStream = const Stream.empty(),
-  }) : super(key: key);
+  const TimelineListTile(
+      {Key key,
+      @required this.context,
+      @required this.post,
+      @required this.index,
+      this.onProfilePicTap,
+      this.refreshTimeStream = const Stream.empty(),
+      this.isUserDetails = false})
+      : super(key: key);
 
   final BuildContext context;
   final Stream<bool> refreshTimeStream;
   final Post post;
   final int index;
   final Function onProfilePicTap;
+  final bool isUserDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +109,10 @@ class TimelineListTile extends StatelessWidget {
                 children: [
                   Padding(
                       padding: const EdgeInsets.only(top: 3.0),
-                      child: PostBody(post: post)),
+                      child: PostBody(
+                        post: post,
+                        isUserDetails: isUserDetails,
+                      )),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -183,44 +188,48 @@ class PostIcon extends StatelessWidget {
 
 class PostBody extends StatelessWidget {
   final Post post;
+  final bool isUserDetails;
 
   const PostBody({
     Key key,
     @required this.post,
+    @required this.isUserDetails,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final showText = post.postText != null && post.postText.isNotEmpty;
+    final showImage = post.imageInfo != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (post.postText != null) PostText(post: post),
-        if (post.imageInfo != null) PostImage(post: post),
+        if (showText) PostText(post: post),
+        if (showImage) PostImage(post: post, isUserDetails: isUserDetails),
       ],
     );
   }
 }
 
 class PostImage extends StatelessWidget {
-  const PostImage({
-    Key key,
-    @required this.post,
-  }) : super(key: key);
+  const PostImage({Key key, @required this.post, @required this.isUserDetails})
+      : super(key: key);
 
   final Post post;
+  final bool isUserDetails;
 
   @override
   Widget build(BuildContext context) {
+    final heroTag = isUserDetails ? "details${post.id}" : post.id;
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
           PageRouteBuilder(
             opaque: false,
-            transitionsBuilder: (BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-                Widget child) => FadeTransition(opacity: animation, child: child),
-            pageBuilder: (_, __, ___) => FullScreenImageView(post.imageInfo),
+            transitionsBuilder: (_, animation, __, child) =>
+                FadeTransition(opacity: animation, child: child),
+            pageBuilder: (_, __, ___) =>
+                FullScreenImageView(post.imageInfo, heroTag),
           ),
         );
       },
@@ -231,7 +240,7 @@ class PostImage extends StatelessWidget {
           child: AspectRatio(
             aspectRatio: post.imageInfo.size.aspectRatio,
             child: Hero(
-              tag: post.imageInfo.url,
+              tag: heroTag,
               child: CachedNetworkImage(
                   placeholder: (context, _) =>
                       Container(color: post.imageInfo.placeholderColor),
