@@ -24,6 +24,7 @@ import 'common/theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await FirebaseAuth.instance.currentUser;
   final sharedPreferences = await SharedPreferences.getInstance();
   runApp(ChaiApp(sharedPreferences));
 }

@@ -19,6 +19,10 @@ class AuthProvider {
     );
   }
 
+  Future<ConfirmationResult> signInWithPhoneNumber(String phone) async {
+    return await FirebaseAuth.instance.signInWithPhoneNumber(phone);
+  }
+
   Future<void> signInWithPhone(String code, PrefsProvider prefs) async {
     PhoneAuthCredential phoneAuthCredential = PhoneAuthProvider.credential(
         verificationId: prefs.getVerificationId(), smsCode: code);

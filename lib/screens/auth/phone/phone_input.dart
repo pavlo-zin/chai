@@ -7,7 +7,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:tuple/tuple.dart';
 import '../../../providers/auth_provider.dart';
 
 class PhoneInput extends StatefulWidget {
@@ -74,8 +75,16 @@ class _PhoneInputState extends State<PhoneInput> {
         width: 100,
         child: CupertinoButton(
             onPressed: () {
+              log(phone.toString());
+
+              if (kIsWeb) {
+                authProvider.signInWithPhoneNumber(phone.phoneNumber).then((result) {
+                  Navigator.pushNamed(context, "/confirm_code",
+                      arguments: Tuple2(phone, result));
+                });
+              }
+
               if (_formKey.currentState.validate()) {
-                log(phone.toString());
                 authProvider.verifyPhoneNumber(phone.phoneNumber, error: (e) {
                   _scaffoldKey.currentState
                       .showSnackBar(SnackBar(content: Text(e.toString())));

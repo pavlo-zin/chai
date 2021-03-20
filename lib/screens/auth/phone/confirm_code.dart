@@ -1,9 +1,12 @@
 import 'package:chai/providers/prefs_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 
 import '../../../providers/auth_provider.dart';
 
@@ -17,7 +20,10 @@ class _ConfirmCodeState extends State<ConfirmCode> {
   Widget build(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
     final authProvider = context.watch<AuthProvider>();
-    final PhoneNumber phone = ModalRoute.of(context).settings.arguments;
+    final PhoneNumber phone =
+        (ModalRoute.of(context).settings.arguments as Tuple2).item1;
+    final ConfirmationResult confirmationResult =
+        (ModalRoute.of(context).settings.arguments as Tuple2).item2;
 
     String code;
 
@@ -27,6 +33,13 @@ class _ConfirmCodeState extends State<ConfirmCode> {
           actions: [
             CupertinoButton(
                 onPressed: () {
+                  if (_formKey.currentState.validate() && kIsWeb) {
+                    _formKey.currentState.save();
+                    confirmationResult.confirm(code).then((value) =>
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/', (Route<dynamic> route) => false));
+                  }
+
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
                     final prefs = context.read<PrefsProvider>();
@@ -50,7 +63,10 @@ class _ConfirmCodeState extends State<ConfirmCode> {
                   builder: (context, snapshot) {
                     return snapshot.hasData
                         ? Text("${phone.dialCode} ${snapshot.data}",
-                            style: Theme.of(context).textTheme.headline4.copyWith(fontSize: 30))
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline4
+                                .copyWith(fontSize: 30))
                         : Text("");
                   }),
               SizedBox(height: 8),

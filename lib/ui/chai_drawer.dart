@@ -32,7 +32,7 @@ class ChaiDrawer extends StatelessWidget {
                       if (snapshot.hasData) {
                         log("_buildDrawerHeader User ${snapshot.data.id}");
                         return Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             NetworkAvatar(

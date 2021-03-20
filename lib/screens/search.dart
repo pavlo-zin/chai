@@ -4,10 +4,10 @@ import 'package:chai/screens/user_details.dart';
 import 'package:chai/ui/search_list_tile.dart';
 import 'package:chai/ui/search_text_field.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 
 class Search extends StatefulWidget {
   @override
@@ -48,7 +48,7 @@ class _SearchState extends State<Search> {
             isCloseIconVisible: _isCloseIconVisible,
           ),
         ),
-        actions: [
+        actions: kIsWeb ? null : [
           CupertinoButton(
               onPressed: () {
                 Navigator.of(context).pop();
