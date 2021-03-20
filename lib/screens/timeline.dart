@@ -6,10 +6,12 @@ import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/providers/auth_provider.dart';
 import 'package:chai/providers/firestore_provider.dart';
+import 'package:chai/screens/search.dart';
 import 'package:chai/screens/user_details.dart';
 import 'package:chai/ui/chai_drawer.dart';
 import 'package:chai/ui/timeline_empty_view.dart';
 import 'package:chai/ui/timeline_list_tile.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter/animation.dart';
@@ -57,6 +59,36 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Scaffold(
+        body: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ChaiDrawer(authProvider),
+            VerticalDivider(),
+            SizedBox(
+              width: MediaQuery.of(context).size.width / 3,
+              child: StreamBuilder<List<Post>>(
+                  stream: postsStream,
+                  builder: (context, snapshot) {
+                    return CustomScrollView(slivers: [
+                      _buildAppBar(context),
+                      _buildTimelineView(snapshot)
+                    ]);
+                  }),
+            ),
+            VerticalDivider(),
+            Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24.0),
+              child: SizedBox(
+                  width: MediaQuery.of(context).size.width / 6,
+                  child: Search()),
+            )
+          ],
+        ),
+        floatingActionButton: _buildFab(context, user),
+      );
+    }
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: MediaQuery.of(context).platformBrightness == Brightness.dark
           ? SystemUiOverlayStyle.light
@@ -109,14 +141,18 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                       : "assets/logo-white.png"))),
         ],
       ),
-      leading: IconButton(
-          onPressed: () => Scaffold.of(context).openDrawer(),
-          icon: Icon(Feather.menu)),
-      actions: [
-        IconButton(
-            icon: Icon(Feather.search),
-            onPressed: () => Navigator.of(context).pushNamed("/search"))
-      ],
+      leading: kIsWeb
+          ? null
+          : IconButton(
+              onPressed: () => Scaffold.of(context).openDrawer(),
+              icon: Icon(Feather.menu)),
+      actions: kIsWeb
+          ? null
+          : [
+              IconButton(
+                  icon: Icon(Feather.search),
+                  onPressed: () => Navigator.of(context).pushNamed("/search"))
+            ],
     );
   }
 
@@ -158,17 +194,21 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
   }
 
   _buildFab(BuildContext context, Stream<ChaiUser> userStream) {
+    final fabPadding = kIsWeb ? MediaQuery.of(context).size.width / 4 : 0.0;
     return StreamBuilder(
         stream: userStream,
         builder: (context, snapshot) {
           return snapshot.hasData
-              ? FloatingActionButton(
-                  elevation: 2,
-                  highlightElevation: 2,
-                  splashColor: Colors.transparent,
-                  onPressed: () => _composePost(snapshot.data),
-                  child: Icon(Feather.feather, size: 26),
-                )
+              ? Padding(
+                padding: EdgeInsets.only(right: fabPadding),
+                child: FloatingActionButton(
+                    elevation: 2,
+                    highlightElevation: 2,
+                    splashColor: Colors.transparent,
+                    onPressed: () => _composePost(snapshot.data),
+                    child: Icon(Feather.feather, size: 26),
+                  ),
+              )
               : SizedBox.shrink();
         });
   }
@@ -205,10 +245,8 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
       post = Post(
           userInfo: user,
           postText: result.text,
-          imageInfo: PostImageInfo(
-              url: imageUrl,
-              size: size,
-              placeholderColor: color),
+          imageInfo:
+              PostImageInfo(url: imageUrl, size: size, placeholderColor: color),
           timestamp: DateTime.now());
     } else {
       post = Post(
