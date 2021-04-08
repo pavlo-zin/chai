@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
@@ -122,7 +120,8 @@ class _PhotoViewSwipeState extends State<PhotoViewSwipe> {
                   ? (details) {
                       double pixelsPerSecond = _position.dy.abs();
                       if (pixelsPerSecond > (widget.dragDistance ?? 160)) {
-                        SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+                        SystemChrome.setEnabledSystemUIOverlays(
+                            SystemUiOverlay.values);
                         Navigator.of(context).pop();
                       } else {
                         setState(() => _position = Offset(0.0, 0.0));

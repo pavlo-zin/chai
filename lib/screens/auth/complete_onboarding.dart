@@ -41,15 +41,14 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
     final firestore = context.read<FirestoreProvider>();
 
     return StreamBuilder<ChaiUser>(
-        stream: firestore.getUser(),
+        stream: firestore.getCurrentUser(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
               return Scaffold(body: Center(child: CircularProgressIndicator()));
             default:
               if (snapshot.hasData) {
-                log("Skip onboarding, user exists: " +
-                    snapshot.data.toMap().toString());
+                log("Skip onboarding, user exists");
                 context.read<PrefsProvider>().setOnboardingComplete();
                 return Authenticator();
               } else {
@@ -87,8 +86,7 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                 child: RawMaterialButton(
                   onPressed: () {
                     FileUtils.getImage().then((value) {
-                      firestore.uploadAvatar(File(value.path)).then(
-                          (value) {
+                      firestore.uploadAvatar(File(value.path)).then((value) {
                         log("avatar url $value");
                         setState(() {
                           _avatarImageUrl = value;
@@ -125,7 +123,7 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                   )),
               TextFormField(
                   autocorrect: false,
-                  enableSuggestions: false,
+                  enableSuggestions: true,
                   decoration: InputDecoration(
                       hintText: "Name",
                       enabledBorder: UnderlineInputBorder(
@@ -133,8 +131,9 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                             BorderSide(color: Theme.of(context).disabledColor),
                       )),
                   keyboardType: TextInputType.name,
+                  textCapitalization: TextCapitalization.words,
                   validator: (value) =>
-                      value.length > 2 ? null : "Name can't be empty",
+                      value.trim().length > 0 ? null : "Name can't be empty",
                   onSaved: (value) {
                     displayName = value;
                   }),
@@ -157,8 +156,8 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                       ),
                       errorText:
                           _usernameTaken ? "Username already taken" : null),
-                  keyboardType: TextInputType.name,
-                  validator: (value) => value.length > 2
+                  keyboardType: TextInputType.text,
+                  validator: (value) => value.trim().length > 2
                       ? null
                       : "Username must be at least 3 characters long",
                   onSaved: (value) {
@@ -169,11 +168,12 @@ class _CompleteOnboardingState extends State<CompleteOnboarding> {
                   onPressed: () {
                     if (_formKey.currentState.validate()) {
                       _formKey.currentState.save();
-                      final user = ChaiUser(
+                      final newUser = ChaiUser(
+                          id: user.uid,
                           username: username,
                           displayName: displayName,
                           picUrl: _avatarImageUrl);
-                      firestore.setUser(user).then((value) {
+                      firestore.createUser(newUser).then((value) {
                         log("User saved");
                       }, onError: (error) {
                         if (error is UsernameExistsError) {

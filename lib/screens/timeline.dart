@@ -36,8 +36,8 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     authProvider = context.read<AuthProvider>();
-    user = context.read<FirestoreProvider>().getUser();
-    postsStream = context.read<FirestoreProvider>().getPosts();
+    user = context.read<FirestoreProvider>().getCurrentUser();
+    postsStream = context.read<FirestoreProvider>().getFeed();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -205,14 +205,16 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
       post = Post(
           userInfo: user,
           postText: result.text,
-          imageInfo: PostImageInfo(
-              url: imageUrl,
-              size: size,
-              placeholderColor: color),
-          timestamp: DateTime.now());
+          imageInfo:
+              PostImageInfo(url: imageUrl, size: size, placeholderColor: color),
+          timestamp: DateTime.now(),
+          showForIds: user.followedByIds);
     } else {
       post = Post(
-          userInfo: user, postText: result.text, timestamp: DateTime.now());
+          userInfo: user,
+          postText: result.text,
+          timestamp: DateTime.now(),
+          showForIds: user.followedByIds);
     }
 
     await firestore.submitPost(post);
@@ -263,7 +265,6 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
     Navigator.pushNamed(context, '/user_details',
         arguments: UserDetailsArgs(
             userIsKnown: true,
-            user: post.userInfo,
-            profilePicHeroTag: "timelineProfilePic$index"));
+            user: post.userInfo));
   }
 }

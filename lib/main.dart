@@ -47,8 +47,7 @@ class ChaiApp extends StatelessWidget {
         ProxyProvider<AsyncSnapshot<User>, FirestoreProvider>(
           update: (_, userSnapshot, __) {
             final user = userSnapshot.data;
-            return FirestoreProvider(
-                currentUid: user != null ? user.uid : null);
+            return FirestoreProvider(currentUid: user?.uid ?? null);
           },
         ),
       ],
