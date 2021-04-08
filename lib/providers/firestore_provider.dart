@@ -5,8 +5,7 @@ import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:stream_transform/stream_transform.dart';
-import 'package:tuple/tuple.dart';
+import 'package:nanoid/nanoid.dart';
 
 class FirestoreProvider {
   final String currentUid;
@@ -16,8 +15,8 @@ class FirestoreProvider {
 
   FirestoreProvider({this.currentUid});
 
-  Future<void> setUser(ChaiUser user) async {
-    log("setUser $currentUid");
+  Future<void> createUser(ChaiUser user) async {
+    log("createUser $currentUid");
 
     bool usernameExists = await firestore
         .collection('users')
@@ -30,169 +29,86 @@ class FirestoreProvider {
       return Future.error(UsernameExistsError());
     }
 
-    var users = firestore.collection('users');
-    return users.doc(currentUid).set(user.toMap());
+    return firestore.collection('users').doc(currentUid).set(user.toMap());
   }
 
-  Stream<ChaiUser> getUser() {
-    log("getUser $currentUid");
-    return firestore
-        .collection('users')
-        .doc(currentUid)
-        .snapshots()
-        .map((doc) => ChaiUser.fromMap(doc.data(), doc.id));
-  }
+  Stream<ChaiUser> getCurrentUser() => getUserById(currentUid);
 
-  Future<ChaiUser> getUserByUsername(String username) async {
-    return firestore
-        .collection('users')
-        .where('_searchUsername',
-            isEqualTo: username.toLowerCase().replaceAll('@', ''))
-        .get()
-        .then((value) =>
-            value.docs.map((doc) => ChaiUser.fromMap(doc.data(), doc.id)).last);
-  }
+  Stream<ChaiUser> getUserById(String uid) => firestore
+      .collection('users')
+      .doc(uid)
+      .snapshots()
+      .map((snapshot) => ChaiUser.fromMap(snapshot.data(), snapshot.id));
 
-  Future<void> followUser(ChaiUser toFollow, ChaiUser current) async {
-    log("followUser: ${toFollow.displayName}, current: ${current.displayName}");
+  Stream<ChaiUser> getUserByUsername(String username) => firestore
+      .collection('users')
+      .where('_searchUsername',
+          isEqualTo: username.toLowerCase().replaceAll('@', ''))
+      .snapshots()
+      .map((snapshot) => ChaiUser.fromMap(
+          snapshot.docs.single.data(), snapshot.docs.single.id));
 
+  Future<void> toggleUserFollow(ChaiUser toFollow, bool isFollowing) async {
     WriteBatch batch = firestore.batch();
 
-    batch.set(
-        firestore
-            .collection('users')
-            .doc(currentUid)
-            .collection('following')
-            .doc(toFollow.id),
-        toFollow.toMap());
+    batch.update(firestore.collection('users').doc(toFollow.id), {
+      'followedByIds': isFollowing
+          ? FieldValue.arrayRemove([currentUid])
+          : FieldValue.arrayUnion([currentUid]),
+      'followersCount': FieldValue.increment(isFollowing ? -1 : 1)
+    });
 
-    batch.set(
-        firestore
-            .collection('users')
-            .doc(toFollow.id)
-            .collection('followers')
-            .doc(current.id),
-        current.toMap());
+    batch.update(firestore.collection('users').doc(currentUid),
+        {'followingCount': FieldValue.increment(isFollowing ? -1 : 1)});
 
     return batch.commit();
   }
 
-  Future<void> unfollowUser(ChaiUser toUnfollow, ChaiUser current) async {
-    log("unfollowUser: ${toUnfollow.displayName}, current: ${current.displayName}");
+  Future<bool> togglePostLike(Post post) async {
+    return firestore.runTransaction((transaction) async {
+      var latestPost = await transaction
+          .get(firestore.collection('posts').doc(post.id))
+          .then((value) => Post.fromMap(value.data(), value.id));
 
-    WriteBatch batch = firestore.batch();
+      final isLikedByMe = latestPost.likedByIds.contains(currentUid);
 
-    batch.delete(firestore
-        .collection('users')
-        .doc(currentUid)
-        .collection('following')
-        .doc(toUnfollow.id));
-
-    batch.delete(firestore
-        .collection('users')
-        .doc(toUnfollow.id)
-        .collection('followers')
-        .doc(current.id));
-
-    firestore
-        .collection('users')
-        .doc(currentUid)
-        .collection('posts')
-        .where('userInfo.id', isEqualTo: toUnfollow.id)
-        .get()
-        .then((querySnapshot) {
-      querySnapshot.docs.forEach((document) {
-        batch.delete(document.reference);
+      transaction.update(firestore.collection('posts').doc(latestPost.id), {
+        'likesCount': latestPost.likesCount + (isLikedByMe ? -1 : 1),
+        'likedByIds': isLikedByMe
+            ? (latestPost.likedByIds..remove(currentUid))
+            : (latestPost.likedByIds..add(currentUid))
       });
 
-      return batch.commit();
+      return !isLikedByMe;
     });
   }
 
-  Stream<Tuple2> checkIfFollowing(ChaiUser user) {
-    log("checkIfFollowing");
+  bool isLikedByMe(Post post) => post.likedByIds.contains(currentUid);
 
-    final check = firestore
-        .collection('users')
-        .doc(currentUid)
-        .collection('following')
-        .doc(user.id)
-        .snapshots()
-        .map((doc) => ChaiUser.fromMap(doc.data(), doc.id));
+  Future<void> submitPost(Post post) async =>
+      firestore.collection('posts').doc(nanoid(10)).set(post.toMap());
 
-    return getUser().combineLatest(check,
-        (currentUser, followedUser) => Tuple2(currentUser, followedUser));
-  }
-
-  Future<void> submitPost(Post post) async {
-    WriteBatch batch = firestore.batch();
-
-    firestore
-        .collection('users')
-        .doc(currentUid)
-        .collection('followers')
-        .get()
-        .then((querySnapshot) {
-      querySnapshot.docs.forEach((document) {
-        batch.set(
-            firestore
-                .collection('users')
-                .doc(document.id)
-                .collection('posts')
-                .doc(),
-            post.toMap());
-      });
-
-      batch.set(
-          firestore
-              .collection('users')
-              .doc(currentUid)
-              .collection('posts')
-              .doc(),
-          post.toMap());
-
-      return batch.commit();
-    });
-  }
-
-  Stream<List<Post>> getPosts({String uid, bool onlyForThisUser = false}) {
-    final String userId = uid == null ? currentUid : uid;
-
-    log("getPosts for user: $userId");
-
+  Stream<List<Post>> getFeed() {
     var postsQuery = firestore
-        .collection('users')
-        .doc(userId)
         .collection('posts')
+        .where('showForIds', arrayContains: currentUid)
+        .limit(50)
         .orderBy('timestamp', descending: true);
 
-    if (onlyForThisUser)
-      postsQuery = postsQuery.where('userInfo.id', isEqualTo: userId);
-
     return postsQuery.snapshots().map((snapshot) => snapshot.docs
-        .map((document) => Post.fromMap(document.data(), document.id, userId))
+        .map((document) => Post.fromMap(document.data(), document.id))
         .toList());
   }
 
-  Future<List<Post>> getPostsFuture(
-      {String uid, bool onlyForThisUser = false, Duration delay}) async {
-    await Future.delayed(delay);
-
-    final String userId = uid == null ? currentUid : uid;
-
-    log("getPosts for user: $userId");
-
+  Stream<List<Post>> getPostsFromUser({String uid}) {
     var postsQuery = firestore
-        .collection('users')
-        .doc(userId)
         .collection('posts')
+        .where('userInfo.id', isEqualTo: uid)
+        .limit(50)
         .orderBy('timestamp', descending: true);
 
-    if (onlyForThisUser)
-      postsQuery = postsQuery.where('userInfo.id', isEqualTo: userId);
-
-    return postsQuery.get().then((value) => value.docs
-        .map((document) => Post.fromMap(document.data(), document.id, userId))
+    return postsQuery.snapshots().map((snapshot) => snapshot.docs
+        .map((document) => Post.fromMap(document.data(), document.id))
         .toList());
   }
 
