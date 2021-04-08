@@ -38,8 +38,8 @@ class TimelineEmptyView extends StatelessWidget {
                   ),
                 ),
                 TyperAnimatedTextKit(
-                  speed: Duration(milliseconds: 400),
-                  pause: Duration(milliseconds: 200),
+                  speed: Duration(milliseconds: 200),
+                  pause: Duration(milliseconds: 100),
                   isRepeatingAnimation: false,
                   curve: Curves.fastOutSlowIn,
                   textAlign: TextAlign.center,

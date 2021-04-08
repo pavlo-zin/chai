@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chai/models/post.dart';
+import 'package:chai/providers/firestore_provider.dart';
 import 'package:chai/screens/full_screen_image_view.dart';
 import 'package:chai/screens/user_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:like_button/like_button.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'network_avatar.dart';
@@ -30,20 +32,18 @@ class TimelineListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final firestore = context.read<FirestoreProvider>();
     return Column(
       children: [
         ListTile(
+            enableFeedback: false,
             onTap: () {},
-            contentPadding: EdgeInsets.only(left: 16, right: 12),
+            contentPadding: const EdgeInsets.only(left: 16, right: 8),
             leading: GestureDetector(
                 onTap: onProfilePicTap,
-                child: onProfilePicTap == null
-                    ? NetworkAvatar(url: post.userInfo.picUrl)
-                    : Hero(
-                        tag: 'timelineProfilePic$index',
-                        child: NetworkAvatar(url: post.userInfo.picUrl))),
+                child: NetworkAvatar(url: post.userInfo.picUrl)),
             title: Transform.translate(
-              offset: Offset(-8, 0),
+              offset: const Offset(-8, 0),
               child: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Row(
@@ -121,13 +121,59 @@ class TimelineListTile extends StatelessWidget {
                           icon: Feather.message_circle,
                           padding:
                               EdgeInsets.only(top: 8, right: 12, bottom: 8),
-                          text: '13',
+                          text: '',
                           onPressed: () {}),
-                      PostIcon(
-                          context: context,
-                          icon: Feather.heart,
-                          text: '69',
-                          onPressed: () {}),
+                      LikeButton(
+                        onTap: (_) => firestore.togglePostLike(post),
+                        circleColor: CircleColor(
+                            start: Theme.of(context).primaryColorLight,
+                            end: Theme.of(context).primaryColorDark),
+                        bubblesColor: BubblesColor(
+                          dotPrimaryColor: Theme.of(context).primaryColor,
+                          dotSecondaryColor: Theme.of(context).primaryColorDark,
+                        ),
+                        likeBuilder: (bool isLiked) {
+                          return Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_outline,
+                            color: isLiked
+                                ? Colors.redAccent
+                                : Theme.of(context).iconTheme.color,
+                            size: 18,
+                          );
+                        },
+                        isLiked: firestore.isLikedByMe(post),
+                        likeCount: post.likesCount,
+                        likeCountPadding: EdgeInsets.zero,
+                        countBuilder: (int count, bool isLiked, String text) {
+                          var color = isLiked
+                              ? Colors.redAccent
+                              : Theme.of(context).hintColor;
+                          Widget result;
+                          if (count == 0) {
+                            result = Visibility(
+                              maintainSize: true,
+                              maintainAnimation: true,
+                              maintainState: true,
+                              visible: false,
+                              child: Text(
+                                text,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption
+                                    .copyWith(color: color),
+                              ),
+                            );
+                          } else
+                            result = Text(
+                              text,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .caption
+                                  .copyWith(color: color),
+                            );
+                          return result;
+                        },
+                      ),
                       PostIcon(
                           context: context,
                           icon: Feather.share,
