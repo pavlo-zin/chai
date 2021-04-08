@@ -13,7 +13,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 
 class UserDetailsArgs {
   final bool userIsKnown;
@@ -60,26 +59,26 @@ class _UserDetailsState extends State<UserDetails> {
     final firestore = context.read<FirestoreProvider>();
     final args = ModalRoute.of(context).settings.arguments as UserDetailsArgs;
 
-    return args.userIsKnown
-        ? _buildUserDetailsView(args, firestore)
-        : FutureBuilder<ChaiUser>(
-            future: firestore.getUserByUsername(args.username),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildPlaceholderView(args.username);
-              }
-              if (snapshot.connectionState == ConnectionState.done) {
-                return snapshot.hasData
-                    ? _buildUserDetailsView(
-                        UserDetailsArgs(
-                            userIsKnown: false,
-                            user: snapshot.data,
-                            profilePicHeroTag: ''),
-                        firestore)
-                    : _buildPlaceholderView(args.username, isLoading: false);
-              }
-              return SizedBox.shrink();
-            });
+    return StreamBuilder<ChaiUser>(
+        stream: args.userIsKnown
+            ? firestore.getUserById(args.user.id)
+            : firestore.getUserByUsername(args.username),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildPlaceholderView(args.username);
+          }
+          if (snapshot.connectionState == ConnectionState.active) {
+            return snapshot.hasData
+                ? _buildUserDetailsView(
+                    UserDetailsArgs(
+                        userIsKnown: false,
+                        user: snapshot.data,
+                        profilePicHeroTag: ''),
+                    firestore)
+                : _buildPlaceholderView(args.username, isLoading: false);
+          }
+          return SizedBox.shrink();
+        });
   }
 
   _buildPlaceholderView(String username, {bool isLoading = true}) {
@@ -149,7 +148,6 @@ class _UserDetailsState extends State<UserDetails> {
 
   _buildUserDetailsView(UserDetailsArgs args, FirestoreProvider firestore) {
     final ChaiUser user = args.user;
-    final String profilePicTag = args.profilePicHeroTag;
     final headerUrl = 'https://source.unsplash.com/L82-kkEBOd0/1500x1000';
 
     return Scaffold(
@@ -293,95 +291,10 @@ class _UserDetailsState extends State<UserDetails> {
                       icon: Icon(Feather.more_horizontal))
                 ],
               ),
-              SliverToBoxAdapter(
-                  child: Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(children: [
-                      Positioned(
-                          left: 20,
-                          child: NetworkAvatar(
-                              url: user.picUrl, radius: 16, drawBorder: true)),
-                      Container(
-                        padding: EdgeInsets.only(right: 0, top: 8),
-                        alignment: Alignment.topRight,
-                        child: firestore.isUserMe(user)
-                            ? buildEditProfileButton(context)
-                            : buildFollowButton(context, user, firestore),
-                      ),
-                    ]),
-                    Text(
-                      "${user.displayName}",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6
-                          .copyWith(fontWeight: FontWeight.w800),
-                    ),
-                    Text(
-                      "@${user.username}",
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: Theme.of(context).hintColor),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      "There are two kinds of people in the world, and I don't like them both!",
-                      style: Theme.of(context).textTheme.subtitle1,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Text("69",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold)),
-                            SizedBox(width: 2),
-                            Text("Following",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(
-                                        fontWeight: FontWeight.normal,
-                                        color: Theme.of(context).hintColor))
-                          ],
-                        ),
-                        SizedBox(width: 8),
-                        Row(
-                          children: [
-                            Text("983",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold)),
-                            SizedBox(width: 2),
-                            Text("Followers",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(
-                                        fontWeight: FontWeight.normal,
-                                        color: Theme.of(context).hintColor))
-                          ],
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 16)
-                  ],
-                ),
-              )),
+              buildUserInfo(user, firestore),
               SliverToBoxAdapter(child: Divider(height: 8)),
               FutureBuilder<Object>(
-                  future: Future.delayed(Duration(milliseconds: 300)),
+                  future: Future.delayed(Duration(milliseconds: 0)),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.done)
                       return TimelineView(firestore: firestore, user: user);
@@ -411,21 +324,18 @@ class _UserDetailsState extends State<UserDetails> {
             return Positioned(
                 left: offset > 0 && offset < 41 ? 16 + offset * 0.5 : 16,
                 top: offset < 0 ? paddingTop - offset : paddingTop,
-                child: Hero(
-                  tag: profilePicTag,
-                  child: ValueListenableBuilder(
-                    valueListenable: _offset,
-                    builder: (context, offset, _) => Opacity(
-                      opacity: offset >= 40 ? 0 : 1,
-                      child: NetworkAvatar(
-                        drawBorder: true,
-                        radius: offset <= 0
-                            ? 36
-                            : offset >= 40.0
-                                ? 20
-                                : 36 - offset * 0.5,
-                        url: user.picUrl,
-                      ),
+                child: ValueListenableBuilder(
+                  valueListenable: _offset,
+                  builder: (context, offset, _) => Opacity(
+                    opacity: offset >= 40 ? 0 : 1,
+                    child: NetworkAvatar(
+                      drawBorder: true,
+                      radius: offset <= 0
+                          ? 36
+                          : offset >= 40.0
+                              ? 20
+                              : 36 - offset * 0.5,
+                      url: user.picUrl,
                     ),
                   ),
                 ));
@@ -435,57 +345,113 @@ class _UserDetailsState extends State<UserDetails> {
     ));
   }
 
-  buildFollowButton(
-      BuildContext context, ChaiUser otherUser, FirestoreProvider firestore) {
-    return StreamBuilder<Tuple2>(
-        stream: firestore.checkIfFollowing(otherUser),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            log(snapshot.error.toString());
-          }
+  buildUserInfo(ChaiUser user, FirestoreProvider firestore) {
+    return SliverToBoxAdapter(
+        child: Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(children: [
+            Positioned(
+                left: 20,
+                child: NetworkAvatar(
+                    url: user.picUrl, radius: 16, drawBorder: true)),
+            Container(
+              padding: EdgeInsets.only(right: 0, top: 8),
+              alignment: Alignment.topRight,
+              child: firestore.isUserMe(user)
+                  ? buildEditProfileButton(context)
+                  : buildFollowButton(user, firestore),
+            ),
+          ]),
+          Text(
+            "${user.displayName}",
+            style: Theme.of(context)
+                .textTheme
+                .headline6
+                .copyWith(fontWeight: FontWeight.w800),
+          ),
+          Text(
+            "@${user.username}",
+            style: Theme.of(context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: Theme.of(context).hintColor),
+          ),
+          SizedBox(height: 12),
+          Text(
+            "There are two kinds of people in the world, and I don't like them both!",
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Row(
+                children: [
+                  Text("${user.followingCount}",
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(fontSize: 13, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 2),
+                  Text("Following",
+                      style: Theme.of(context).textTheme.subtitle2.copyWith(
+                          fontWeight: FontWeight.normal,
+                          color: Theme.of(context).hintColor))
+                ],
+              ),
+              SizedBox(width: 8),
+              Row(
+                children: [
+                  Text("${user.followersCount}",
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(fontSize: 13, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 2),
+                  Text("Followers",
+                      style: Theme.of(context).textTheme.subtitle2.copyWith(
+                          fontWeight: FontWeight.normal,
+                          color: Theme.of(context).hintColor))
+                ],
+              )
+            ],
+          ),
+          SizedBox(height: 16)
+        ],
+      ),
+    ));
+  }
 
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return SizedBox(
-                width: 100,
-                child: RawMaterialButton(
-                  onPressed: () {},
-                ));
+  buildFollowButton(ChaiUser otherUser, FirestoreProvider firestore) {
+    final following = otherUser.followedByIds.contains(firestore.currentUid);
 
-          final following = snapshot.data.item2 != null;
-          final currentUser = snapshot.data.item1;
-
-          return SizedBox(
-            width: 100,
-            child: RawMaterialButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                    side: following
-                        ? BorderSide.none
-                        : BorderSide(
-                            color: Theme.of(context).primaryColor, width: 2.0)),
-                onPressed: () {
-                  following
-                      ? firestore.unfollowUser(otherUser, currentUser)
-                      : firestore.followUser(otherUser, currentUser);
-                },
-                fillColor: following
-                    ? Theme.of(context).primaryColor
-                    : Theme.of(context).canvasColor,
-                splashColor:
-                    Theme.of(context).primaryColorLight.withOpacity(0.8),
-                highlightColor: Theme.of(context).primaryColorLight,
-                elevation: 0,
-                highlightElevation: 0,
-                child: Text(
-                  following ? "Following" : "Follow",
-                  style: TextStyle(
-                      color: following
-                          ? Colors.white
-                          : Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.w600),
-                )),
-          );
-        });
+    return SizedBox(
+      width: 100,
+      child: RawMaterialButton(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+              side: following
+                  ? BorderSide.none
+                  : BorderSide(
+                      color: Theme.of(context).primaryColor, width: 2.0)),
+          onPressed: () => firestore.toggleUserFollow(otherUser, following),
+          fillColor: following
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).canvasColor,
+          splashColor: Theme.of(context).primaryColorLight.withOpacity(0.8),
+          highlightColor: Theme.of(context).primaryColorLight,
+          elevation: 0,
+          highlightElevation: 0,
+          child: Text(
+            following ? "Following" : "Follow",
+            style: TextStyle(
+                color:
+                    following ? Colors.white : Theme.of(context).primaryColor,
+                fontWeight: FontWeight.w600),
+          )),
+    );
   }
 
   buildEditProfileButton(BuildContext context) {
@@ -566,7 +532,7 @@ class TimelineView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Post>>(
-        stream: firestore.getPosts(uid: user.id, onlyForThisUser: true),
+        stream: firestore.getPostsFromUser(uid: user.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             return SliverPadding(

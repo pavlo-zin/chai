@@ -27,7 +27,7 @@ class ChaiDrawer extends StatelessWidget {
               height: 200,
               child: DrawerHeader(
                 child: StreamBuilder<ChaiUser>(
-                    stream: context.read<FirestoreProvider>().getUser(),
+                    stream: context.read<FirestoreProvider>().getCurrentUser(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         log("_buildDrawerHeader User ${snapshot.data.id}");

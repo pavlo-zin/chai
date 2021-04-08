@@ -4,8 +4,19 @@ class ChaiUser {
   final String picUrl;
   final String displayName;
   final String bio;
+  final int followersCount;
+  final int followingCount;
+  final List<String> followedByIds;
 
-  ChaiUser({this.id, this.username, this.picUrl, this.displayName, this.bio});
+  ChaiUser(
+      {this.id,
+      this.username,
+      this.picUrl,
+      this.displayName,
+      this.bio,
+      this.followersCount,
+      this.followingCount,
+      this.followedByIds});
 
   factory ChaiUser.fromMap(Map<String, dynamic> data, String id) {
     if (data == null || id == null) {
@@ -15,12 +26,19 @@ class ChaiUser {
     final picUrl = data['picUrl'] as String;
     final displayName = data['displayName'] as String;
     final bio = data['bio'] as String;
+    final followersCount = data['followersCount'] as int ?? 0;
+    final followingCount = data['followingCount'] as int ?? 0;
+    final followedByIds =
+        List<String>.from(data['followedByIds'] ?? List.empty());
     return ChaiUser(
         id: id,
         username: username,
         picUrl: picUrl,
         displayName: displayName,
-        bio: bio);
+        bio: bio,
+        followersCount: followersCount,
+        followingCount: followingCount,
+        followedByIds: followedByIds);
   }
 
   factory ChaiUser.fromPostMap(Map<String, dynamic> data) {
@@ -40,8 +58,16 @@ class ChaiUser {
         bio: bio);
   }
 
-  Map<String, dynamic> toMap({bool includeUid = false}) {
-    final Map<String, dynamic> user = {
+  Map<String, dynamic> toMap({bool basicInfo = false}) {
+    if (basicInfo)
+      return {
+        'username': username,
+        'picUrl': picUrl,
+        'displayName': displayName,
+        'id': id
+      };
+
+    return {
       'username': username,
       'picUrl': picUrl,
       'displayName': displayName,
@@ -49,11 +75,9 @@ class ChaiUser {
       // search fields
       '_searchUsername': username.toLowerCase(),
       '_searchDisplayName': displayName.toLowerCase(),
+      // users must 'follow' themselves to see their own posts in timeline
+      'followedByIds': [id]
     };
-    if (includeUid) {
-      user['id'] = id;
-    }
-    return user;
   }
 
   @override
