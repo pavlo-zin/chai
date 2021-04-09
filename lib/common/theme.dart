@@ -35,3 +35,9 @@ ThemeData buildAppTheme(BuildContext context, {bool dark = false}) {
     primarySwatch: Colors.deepOrange,
   );
 }
+
+getLogoStyle(BuildContext context, {bool small = false}) =>
+    Theme.of(context).textTheme.headline2.copyWith(
+        fontSize: small ? 28 : 64,
+        fontWeight: FontWeight.w900,
+        letterSpacing: -1);
