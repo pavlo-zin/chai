@@ -25,7 +25,7 @@ class _AboutState extends State<About> {
                 children: [
                   Text("chai",
                       style: Theme.of(context).textTheme.headline1.copyWith(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                           color: Theme.of(context).accentColor,
                           letterSpacing: -5)),
                   SizedBox(width: 2),

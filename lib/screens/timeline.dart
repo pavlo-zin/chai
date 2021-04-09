@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chai/common/file_utils.dart';
+import 'package:chai/common/theme.dart';
 import 'package:chai/models/chai_user.dart';
 import 'package:chai/models/post.dart';
 import 'package:chai/providers/auth_provider.dart';
@@ -95,20 +96,7 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
               child: SizedBox(height: 4.0, child: LinearProgressIndicator()),
             ),
           )),
-      title: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-              height: 28,
-              child: Image(
-                  color: Color.fromRGBO(255, 255, 255, 0.85),
-                  colorBlendMode: BlendMode.modulate,
-                  image: AssetImage(MediaQuery.of(context).platformBrightness ==
-                          Brightness.light
-                      ? "assets/logo.png"
-                      : "assets/logo-white.png"))),
-        ],
-      ),
+      title: Text('chai', style: getLogoStyle(context, small: true)),
       leading: IconButton(
           onPressed: () => Scaffold.of(context).openDrawer(),
           icon: Icon(Feather.menu)),
