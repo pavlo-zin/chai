@@ -17,17 +17,8 @@ class _WelcomeState extends State<Welcome> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  child: Image(
-                      image: AssetImage(
-                          MediaQuery.of(context).platformBrightness ==
-                                  Brightness.light
-                              ? "assets/logo.png"
-                              : "assets/logo-white.png")),
-                  width: 150,
-                  height: 65,
-                ),
-                SizedBox(height: 32),
+                Text('chai', style: getLogoStyle(context)),
+                SizedBox(height: 24),
                 SizedBox(
                     width: 100,
                     child: TextButton(
