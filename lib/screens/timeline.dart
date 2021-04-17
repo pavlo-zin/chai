@@ -64,20 +64,20 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
           : SystemUiOverlayStyle.dark,
       child: Container(
         color: Theme.of(context).canvasColor,
-        child: SafeArea(
-          bottom: false,
-          child: Scaffold(
-            drawer: ChaiDrawer(authProvider),
-            body: StreamBuilder<List<Post>>(
-                stream: postsStream,
-                builder: (context, snapshot) {
-                  return CustomScrollView(slivers: [
+        child: Scaffold(
+          drawer: ChaiDrawer(authProvider),
+          body: StreamBuilder<List<Post>>(
+              stream: postsStream,
+              builder: (context, snapshot) {
+                return SafeArea(
+                  bottom: false,
+                  child: CustomScrollView(slivers: [
                     _buildAppBar(context),
                     _buildTimelineView(snapshot)
-                  ]);
-                }),
-            floatingActionButton: _buildFab(context, user),
-          ),
+                  ]),
+                );
+              }),
+          floatingActionButton: _buildFab(context, user),
         ),
       ),
     );
@@ -137,7 +137,7 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                       refreshTimeStream: refreshTimeController.stream,
                       post: snapshot.data[index],
                       index: index,
-                      onProfilePicTap: () => _openUserDetails(post, index));
+                      onOpenUserDetails: () => _openUserDetails(post, index));
                 },
                 childCount: snapshot.hasData ? snapshot.data.length : 0,
               )),

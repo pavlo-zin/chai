@@ -18,7 +18,7 @@ class TimelineListTile extends StatelessWidget {
       @required this.context,
       @required this.post,
       @required this.index,
-      this.onProfilePicTap,
+      this.onOpenUserDetails,
       this.refreshTimeStream = const Stream.empty(),
       this.isUserDetails = false})
       : super(key: key);
@@ -27,7 +27,7 @@ class TimelineListTile extends StatelessWidget {
   final Stream<bool> refreshTimeStream;
   final Post post;
   final int index;
-  final Function onProfilePicTap;
+  final Function onOpenUserDetails;
   final bool isUserDetails;
 
   @override
@@ -39,8 +39,8 @@ class TimelineListTile extends StatelessWidget {
             enableFeedback: false,
             onTap: () {},
             contentPadding: const EdgeInsets.only(left: 16, right: 8),
-            leading: GestureDetector(
-                onTap: onProfilePicTap,
+            leading: InkResponse(
+                onTap: onOpenUserDetails,
                 child: NetworkAvatar(url: post.userInfo.picUrl)),
             title: Transform.translate(
               offset: const Offset(-8, 0),
@@ -51,23 +51,31 @@ class TimelineListTile extends StatelessWidget {
                   children: [
                     Flexible(
                       flex: 0,
-                      child: Text(post.userInfo.displayName,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        onTap: onOpenUserDetails,
+                        child: Text(post.userInfo.displayName,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
                     ),
                     Flexible(
                       flex: 1,
-                      child: Container(
-                        padding: EdgeInsets.only(left: 4),
-                        child: Text(
-                          "@${post.userInfo.username}",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(color: Theme.of(context).hintColor),
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        onTap: onOpenUserDetails,
+                        child: Container(
+                          padding: EdgeInsets.only(left: 4),
+                          child: Text(
+                            "@${post.userInfo.username}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: Theme.of(context).hintColor),
+                          ),
                         ),
                       ),
                     ),
@@ -107,12 +115,11 @@ class TimelineListTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                      padding: const EdgeInsets.only(top: 3.0),
-                      child: PostBody(
-                        post: post,
-                        isUserDetails: isUserDetails,
-                      )),
+                  SizedBox(height: 2),
+                  PostBody(
+                    post: post,
+                    isUserDetails: isUserDetails,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -267,37 +274,50 @@ class PostImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = isUserDetails ? "details${post.id}" : post.id;
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            opaque: false,
-            transitionsBuilder: (_, animation, __, child) =>
-                FadeTransition(opacity: animation, child: child),
-            pageBuilder: (_, __, ___) =>
-                FullScreenImageView(post.imageInfo, heroTag),
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: AspectRatio(
-            aspectRatio: post.imageInfo.size.aspectRatio,
-            child: Hero(
-              tag: heroTag,
-              child: CachedNetworkImage(
-                  placeholder: (context, _) =>
-                      Container(color: post.imageInfo.placeholderColor),
-                  imageUrl: post.imageInfo.url,
-                  fit: BoxFit.cover),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: AspectRatio(
+              aspectRatio: post.imageInfo.size.aspectRatio,
+              child: Hero(
+                tag: heroTag,
+                child: CachedNetworkImage(
+                    placeholder: (context, _) =>
+                        Container(color: post.imageInfo.placeholderColor),
+                    imageUrl: post.imageInfo.url,
+                    fit: BoxFit.cover),
+              ),
             ),
           ),
-        ),
+          Positioned.fill(
+            child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  splashColor: Colors.transparent,
+                  onTap: () => _openImage(context, heroTag),
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                )),
+          )
+        ],
       ),
     );
   }
+
+  _openImage(BuildContext context, String heroTag) =>
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          opaque: false,
+          transitionsBuilder: (_, animation, __, child) =>
+              FadeTransition(opacity: animation, child: child),
+          pageBuilder: (_, __, ___) =>
+              FullScreenImageView(post.imageInfo, heroTag),
+        ),
+      );
 }
 
 class PostText extends StatelessWidget {

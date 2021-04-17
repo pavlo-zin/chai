@@ -385,39 +385,7 @@ class _UserDetailsState extends State<UserDetails> {
             style: Theme.of(context).textTheme.subtitle1,
           ),
           SizedBox(height: 16),
-          Row(
-            children: [
-              Row(
-                children: [
-                  Text("${user.followingCount}",
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(fontSize: 13, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 2),
-                  Text("Following",
-                      style: Theme.of(context).textTheme.subtitle2.copyWith(
-                          fontWeight: FontWeight.normal,
-                          color: Theme.of(context).hintColor))
-                ],
-              ),
-              SizedBox(width: 8),
-              Row(
-                children: [
-                  Text("${user.followersCount}",
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(fontSize: 13, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 2),
-                  Text("Followers",
-                      style: Theme.of(context).textTheme.subtitle2.copyWith(
-                          fontWeight: FontWeight.normal,
-                          color: Theme.of(context).hintColor))
-                ],
-              )
-            ],
-          ),
+          FollowingInfo(context: context, user: user),
           SizedBox(height: 16)
         ],
       ),
@@ -491,6 +459,58 @@ class _UserDetailsState extends State<UserDetails> {
 
   double normalize(double value, double min, double max) {
     return (value - min) / (max - min);
+  }
+}
+
+class FollowingInfo extends StatelessWidget {
+  const FollowingInfo({
+    Key key,
+    @required this.context,
+    @required this.user,
+    this.fontSize = 14
+  }) : super(key: key);
+
+  final BuildContext context;
+  final ChaiUser user;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Row(
+          children: [
+            Text("${user.followingCount}",
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle1
+                    .copyWith(fontSize: fontSize, fontWeight: FontWeight.bold)),
+            SizedBox(width: 2),
+            Text("Following",
+                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                    fontWeight: FontWeight.normal,
+                    fontSize: fontSize,
+                    color: Theme.of(context).hintColor))
+          ],
+        ),
+        SizedBox(width: 8),
+        Row(
+          children: [
+            Text("${user.followersCount}",
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle2
+                    .copyWith(fontSize: fontSize, fontWeight: FontWeight.bold)),
+            SizedBox(width: 2),
+            Text(user.followersCount == 1 ? 'Follower' : 'Followers',
+                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.normal,
+                    color: Theme.of(context).hintColor))
+          ],
+        )
+      ],
+    );
   }
 }
 
