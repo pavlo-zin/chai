@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 final ButtonStyle textButtonStyle = ButtonStyle(
@@ -15,6 +14,7 @@ final InputDecoration textInputDecoration = InputDecoration(
 
 ThemeData buildAppTheme(BuildContext context, {bool dark = false}) {
   return ThemeData(
+    splashFactory: InkRipple.splashFactory,
     iconTheme: IconThemeData(color: dark ? Colors.white54 : Colors.black45),
     dividerColor: dark ? Colors.white24 : Colors.black12,
     disabledColor: dark ? Colors.white54 : Colors.black45,
@@ -25,7 +25,7 @@ ThemeData buildAppTheme(BuildContext context, {bool dark = false}) {
             : Colors.deepOrange[200]),
     canvasColor: dark ? Colors.black : Colors.white,
     textTheme: Theme.of(context).textTheme.apply(
-        displayColor: dark ? Colors.white70 : Colors.black87,
+        displayColor: dark ? Colors.white.withOpacity(0.85) : Colors.black87,
         bodyColor: dark ? Colors.white.withOpacity(0.85) : Colors.black87),
     appBarTheme: AppBarTheme(
         elevation: 0,
