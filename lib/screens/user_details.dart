@@ -438,11 +438,11 @@ class _UserDetailsState extends State<UserDetails> {
                     backgroundColor: Theme.of(context).canvasColor,
                     margin: EdgeInsets.symmetric(horizontal: 36),
                     borderRadius: BorderRadius.circular(30),
-                    style: FlashStyle.floating,
+                    behavior: FlashBehavior.floating,
                     position: FlashPosition.top,
                     controller: controller,
                     child: FlashBar(
-                      message: Text("No",
+                      content: Text("Not supported yet :(",
                           style: Theme.of(context).textTheme.subtitle1),
                     )));
           },

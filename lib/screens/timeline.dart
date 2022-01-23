@@ -232,10 +232,10 @@ class _TimelineState extends State<Timeline> with WidgetsBindingObserver {
                 color: Theme.of(context).hintColor.withOpacity(0.2))
           ],
           borderRadius: BorderRadius.circular(10),
-          style: FlashStyle.floating,
+          behavior: FlashBehavior.floating,
           position: FlashPosition.top,
           child: FlashBar(
-            message: Row(
+            content: Row(
               children: [
                 Icon(Feather.check_circle,
                     color: Theme.of(context).accentColor),

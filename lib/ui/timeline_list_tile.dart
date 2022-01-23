@@ -335,31 +335,27 @@ class PostText extends StatelessWidget {
         style: Theme.of(context).textTheme.subtitle1,
         parse: [
           MatchText(
-              renderWidget: ({String text, String pattern}) {
-                return RawMaterialButton(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                    ),
-                    constraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/user_details',
-                          arguments: UserDetailsArgs(
-                              userIsKnown: false,
-                              username: text,
-                              profilePicHeroTag: ''));
-                    },
-                    child: Text(text,
-                        style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: Theme.of(context).primaryColorDark)));
-              },
-              pattern: r'@[a-zA-Z0-9][a-zA-Z0-9_.]+[a-zA-Z0-9]',
-              regexOptions: RegexOptions(
-                  multiLine: false,
-                  caseSensitive: false,
-                  unicode: false,
-                  dotAll: false))
+            renderWidget: ({String text, String pattern}) {
+              return RawMaterialButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  constraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                  padding: EdgeInsets.zero,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/user_details',
+                        arguments: UserDetailsArgs(
+                            userIsKnown: false,
+                            username: text,
+                            profilePicHeroTag: ''));
+                  },
+                  child: Text(text,
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                          color: Theme.of(context).primaryColorDark)));
+            },
+            pattern: r'@[a-zA-Z0-9][a-zA-Z0-9_.]+[a-zA-Z0-9]',
+          )
         ]);
   }
 }
