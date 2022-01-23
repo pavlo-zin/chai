@@ -1,16 +1,20 @@
-# chai
+## chai
+<img src="assets/app_icon.png" width="100">
 
-A new Flutter application.
+A basic twitter-like app written in Flutter.
 
-## Getting Started
+## Key features
+* Sign-in using phone number
+* Timeline
+* Text and photo posts (gallery and camera are supported)
+* Ability to like posts
+* Ability to follow users
+* Profile details
+* Search users
 
-This project is a starting point for a Flutter application.
+## UI
+<img src="https://user-images.githubusercontent.com/3294452/150686475-5be145c6-2bd9-4288-9642-bc28aaffa525.png" width="319"> <img src="https://user-images.githubusercontent.com/3294452/150686533-02b229f8-8501-4389-a707-f9dc771709ba.png" width="319"> <img src="https://user-images.githubusercontent.com/3294452/150686370-4635e2d5-0a91-43d4-99d6-64e99b0b51e0.png" width="319"> 
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech stack
+* Writtern in Flutter
+* Firebase as a backend (database and storage)
